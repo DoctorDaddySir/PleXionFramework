@@ -1,7 +1,7 @@
-package com.doctordaddysir.plugins.test;
+package plugins;
 
 import com.doctordaddysir.annotations.PluginInfo;
-import com.doctordaddysir.plugins.base.Plugin;
+import com.doctordaddysir.base.Plugin;
 
 @PluginInfo(name = "GoodbyePlugin", description = "A simple plugin that says goodbye")
 public final class GoodbyePlugin implements Plugin {

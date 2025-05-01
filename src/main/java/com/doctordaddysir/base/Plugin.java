@@ -1,4 +1,4 @@
-package com.doctordaddysir.plugins.base;
+package com.doctordaddysir.base;
 
 public interface Plugin {
     void execute();

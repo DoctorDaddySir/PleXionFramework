@@ -2,7 +2,7 @@ package com.doctordaddysir;
 
 
 import com.doctordaddysir.annotations.AnnotationUtils;
-import com.doctordaddysir.plugins.base.Plugin;
+import com.doctordaddysir.base.Plugin;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -30,8 +30,12 @@ public class PluginController {
 
     }
 
-    public void start(Scanner scanner) {
-        this.scanner = scanner;
+    public void registerPlugin(Class<?> clazz) {
+        registerPlugin(clazz.getName());
+    }
+
+    public void start() {
+        this.scanner = new Scanner(System.in);
         System.out.println("PluginController started. press enter to continue");
         scanner.nextLine();
         startLoop();

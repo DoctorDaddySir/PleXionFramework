@@ -1,7 +1,7 @@
-package com.doctordaddysir.plugins.test;
+package plugins;
 
 import com.doctordaddysir.annotations.PluginInfo;
-import com.doctordaddysir.plugins.base.Plugin;
+import com.doctordaddysir.base.Plugin;
 
 @PluginInfo(name = "HelloPlugin", description = "A simple plugin that prints a hello message.")
 public class HelloPlugin implements Plugin {

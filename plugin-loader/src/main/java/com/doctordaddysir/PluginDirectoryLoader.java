@@ -20,7 +20,7 @@ import java.util.Properties;
 
 public class PluginDirectoryLoader {
     private final static String DIRECTORY_NAME = "plugins";
-    private final static String FQCN_PREFIX = "plugin.";
+    private final static String FQCN_PREFIX = "plugins.";
     private final static PluginController controller = new PluginController();
 
     public static void destroyPlugins(Map<String, Plugin> instantiatedPlugins, Map<String, URLClassLoader> classLoaders, Map<String, Plugin> proxies) {

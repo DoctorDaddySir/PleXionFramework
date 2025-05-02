@@ -1,7 +1,7 @@
 # 🧩 Java Plugin Framework
 
-A lightweight, modular plugin execution framework built using Java Reflection.  
-This system supports dynamic class loading, annotation-based metadata, and runtime plugin discovery from a designated directory.
+A lightweight, modular plugins execution framework built using Java Reflection.  
+This system supports dynamic class loading, annotation-based metadata, and runtime plugins discovery from a designated directory.
 
 ---
 
@@ -18,7 +18,7 @@ This system supports dynamic class loading, annotation-based metadata, and runti
 
 ## 🏗️ Plugin Requirements
 
-To be recognized by the system, each plugin class must:
+To be recognized by the system, each plugins class must:
 
 - Be placed in the `plugins` package
 - Be compiled with the flag:
@@ -40,7 +40,7 @@ import com.doctordaddysir.annotations.PluginInfo;
 @PluginInfo(name = "HelloPlugin", version = "1.0")
 public class HelloPlugin implements Plugin {
     public void execute() {
-        System.out.println("Hello from plugin!");
+        System.out.println("Hello from plugins!");
     }
 }
 ```
@@ -88,7 +88,7 @@ java -cp out com.doctordaddysir.Main
 4. Compile using `javac -d plugins`
 5. Drop the resulting `.class` file into `./plugins/plugins/`
 
-✅ That’s it — your plugin will be auto-registered at runtime!
+✅ That’s it — your plugins will be auto-registered at runtime!
 
 ---
 
@@ -103,7 +103,7 @@ This project is open-sourced under the [MIT License](LICENSE).
 If you'd like to contribute:
 
 - Fork the repo
-- Follow the plugin structure and conventions
+- Follow the plugins structure and conventions
 - Submit a pull request with your feature or fix
 
 ---

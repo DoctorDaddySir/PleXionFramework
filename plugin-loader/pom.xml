@@ -14,6 +14,6 @@
     <name>PleXion Core Framework</name>
 
     <dependencies>
-        <!-- your plugin API dependencies -->
+        <!-- your plugins API dependencies -->
     </dependencies>
 </project>

@@ -3,22 +3,29 @@ package com.doctordaddysir;
 
 import com.doctordaddysir.annotations.AnnotationUtils;
 import com.doctordaddysir.base.Plugin;
+import com.doctordaddysir.proxies.PluginInvocationHandler;
+import com.doctordaddysir.proxies.PluginProxyFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.lang.reflect.Proxy;
+import java.net.URLClassLoader;
+import java.util.*;
 
 public class PluginController {
+    private Boolean isDebugMode = false;
     private List<Class<?>> plugins = new ArrayList<>();
+    private final Map<String, Plugin> instantiatedPlugins = new HashMap<>();
+    private final Map<String, URLClassLoader> classLoaders = new HashMap<>();
+    private final Map<String, Plugin> proxies = new HashMap<>();
     private Scanner scanner;
 
 
-    public void registerPlugin(String fullyQualifiedClassName) {
+    public void registerPlugin(String fullyQualifiedClassName, URLClassLoader loader) {
         try {
             Class<?> clazz = Class.forName(fullyQualifiedClassName);
             if (Plugin.class.isAssignableFrom(clazz)) {
                 plugins.add(clazz);
+                classLoaders.put(fullyQualifiedClassName, loader);
                 System.out.println(AnnotationUtils.readPluginInfo(clazz));
 
             } else {
@@ -30,8 +37,9 @@ public class PluginController {
 
     }
 
-    public void registerPlugin(Class<?> clazz) {
-        registerPlugin(clazz.getName());
+    public void registerPlugin(Class<?> clazz, URLClassLoader loader) {
+        registerPlugin(clazz.getName(), loader);
+
     }
 
     public void start() {
@@ -68,8 +76,21 @@ public class PluginController {
                 System.out.println("Invalid choice. Try again.");
             } else {
                 try {
-                    Plugin plugin = instantiate(choice);
-                    plugin.execute();
+                    Plugin plugin;
+                    Plugin proxy = null;
+                    if (isDebugMode) {
+                       proxy  = instantiateProxy(choice);
+                       PluginInvocationHandler invocationHandler = (PluginInvocationHandler) Proxy.getInvocationHandler(proxy);
+                        plugin = invocationHandler.getTarget();
+                        instantiatedPlugins.put(plugin.getClass().getName(), proxy);
+                        proxies.put(proxy.getClass().getName(), plugin);
+                    } else {
+                        plugin = instantiatePlugin(choice);
+                        instantiatedPlugins.put(plugin.getClass().getName(), plugin);
+                    }
+                    LifeCycleManager.invokeLoad(plugin);
+
+                    executePlugin(plugin, proxy);
                     System.out.println("Plugin executed successfully. Press enter to continue...");
                     scanner.nextLine();
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
@@ -79,6 +100,28 @@ public class PluginController {
             }
         }
         scanner.close();
+        PluginDirectoryLoader.destroyPlugins(instantiatedPlugins, classLoaders, proxies);
+    }
+
+
+    private void executePlugin(Plugin plugin, Plugin proxy) {
+        if(proxy == null) {
+            executePlugin(plugin);
+            return;
+        }
+        try {
+            proxy.execute();
+        }catch (Exception e) {
+            LifeCycleManager.invokeError(plugin, e);
+        }
+    }
+
+    private void executePlugin(Plugin plugin) {
+        try {
+            plugin.execute();
+        }catch (Exception e) {
+            LifeCycleManager.invokeError(plugin, e);
+        }
     }
 
     private void clearConsole() {
@@ -86,9 +129,16 @@ public class PluginController {
             System.out.println();
         }
     }
+    public PluginController setDebugMode(Boolean debugMode) {
+        this.isDebugMode = debugMode;
+        return this;
+    }
 
+    private Plugin instantiateProxy(int choice) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        return PluginProxyFactory.createProxy(instantiatePlugin(choice));
+    }
 
-    private Plugin instantiate(int choice) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    private Plugin instantiatePlugin(int choice) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         return (Plugin) plugins.get(choice - 1).getDeclaredConstructor().newInstance();
     }
 }

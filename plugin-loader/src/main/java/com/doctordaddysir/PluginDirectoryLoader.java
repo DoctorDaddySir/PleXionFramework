@@ -140,7 +140,7 @@ public class PluginDirectoryLoader {
 
                     controller.registerPlugin(c, loader);
                 } catch (ClassNotFoundException e) {
-                    System.out.println("Unable to load class " + fqcn);
+                    System.out.println("Unable to load class " + e.getMessage());
                 }
 
             });

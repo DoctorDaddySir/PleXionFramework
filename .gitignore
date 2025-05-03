@@ -36,3 +36,5 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/plugins/goodbye-plugin-1.0-SNAPSHOT.jar
+/plugins/hello-plugin-1.0-SNAPSHOT.jar

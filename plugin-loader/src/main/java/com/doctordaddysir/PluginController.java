@@ -38,7 +38,15 @@ public class PluginController {
     }
 
     public void registerPlugin(Class<?> clazz, URLClassLoader loader) {
-        registerPlugin(clazz.getName(), loader);
+        if (Plugin.class.isAssignableFrom(clazz)) {
+            plugins.add(clazz);
+            classLoaders.put(clazz.getName(), loader);
+            System.out.println(AnnotationUtils.readPluginInfo(clazz));
+
+        } else {
+            System.out.println("Class does not implement PluginInterface");
+        }
+
 
     }
 

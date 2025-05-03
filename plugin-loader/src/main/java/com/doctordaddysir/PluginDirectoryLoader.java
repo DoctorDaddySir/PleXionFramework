@@ -12,18 +12,18 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 
 
 public class PluginDirectoryLoader {
     private final static String DIRECTORY_NAME = "plugins";
     private final static String FQCN_PREFIX = "plugins.";
     private final static PluginController controller = new PluginController();
+    private final static Set<String> successfullyRegisteredPlugins = new HashSet<>();
 
-    public static void destroyPlugins(Map<String, Plugin> instantiatedPlugins, Map<String, URLClassLoader> classLoaders, Map<String, Plugin> proxies) {
+
+    public static void destroyPlugins(Map<String, Plugin> instantiatedPlugins,
+                                      Map<String, URLClassLoader> classLoaders, Map<String, Plugin> proxies) {
         instantiatedPlugins.keySet().forEach(fqcn -> {
             Plugin plugin = instantiatedPlugins.get(fqcn);
             LifeCycleManager.invokeDestroy(plugin);
@@ -45,10 +45,6 @@ public class PluginDirectoryLoader {
             return controller;
         }
 
-        URL[] urls = {pluginDir.toURI().toURL()};
-        registerClassFilesFromDirectory(urls, pluginDir);
-
-
         List<File> jarFiles = List.of(Objects.requireNonNull(pluginDir.listFiles(f -> f.getName().endsWith(".jar"))));
 
         registerJars(jarFiles);
@@ -56,13 +52,6 @@ public class PluginDirectoryLoader {
 
     }
 
-    private static void registerClassFilesFromDirectory(URL[] urls, File pluginDir) throws IOException {
-        List<File> files = Files.walk(pluginDir.toPath()).map(Path::toFile)
-                .filter(f -> f.getName().endsWith(".class"))
-                .toList();
-
-        registerClasses(urls, files);
-    }
 
     private static void registerJars(List<File> files) {
         files.forEach(jarFile -> {
@@ -94,8 +83,11 @@ public class PluginDirectoryLoader {
                         Plugin.class.isAssignableFrom(clazz) &&
                         clazz.getName().equals(FQCN_PREFIX + clazz.getSimpleName())) {
 
-                    controller.registerPlugin(clazz, loader);
-                    System.out.println("Loaded plugin " + clazz.getName() + " from " + jarFile.getName());
+                    if (!successfullyRegisteredPlugins.contains(fqcn)) {
+                        controller.registerPlugin(clazz, loader);
+                        successfullyRegisteredPlugins.add(fqcn);
+                        System.out.println("Loaded plugin " + clazz.getName() + " from " + jarFile.getName());
+                    }
                 }
             } catch (ClassNotFoundException e) {
                 System.out.println("Unable to load class " + e.getMessage());
@@ -107,47 +99,6 @@ public class PluginDirectoryLoader {
 
     }
 
-    private static void registerClasses(URL[] urls, List<File> files) throws IOException {
-        try {
 
-            files.forEach(file -> {
-                String fqcn = FQCN_PREFIX + file.getName().replace(".class", "");
-                URLClassLoader loader = new PluginClassLoader(urls, Plugin.class.getClassLoader());
-                Class<?> c;
-                try {
-                    Boolean hasError = false;
-                    c = loader.loadClass(fqcn);
-                    Boolean isPlugin = c.isAnnotationPresent(PluginInfo.class);
-                    Boolean isSubclass = Plugin.class.isAssignableFrom(c);
-                    Boolean isCorrectFQCN = c.getName().equals(FQCN_PREFIX + c.getSimpleName());
-                    if (!isPlugin) {
-                        System.out.println("Class " + c.getName() + " is not annotated with @PluginInfo");
-                        hasError = true;
-                    }
-                    if (!isSubclass) {
-                        System.out.println("Class " + c.getName() + " does not extend Plugin Interface");
-                        hasError = true;
-                    }
-                    if (!isCorrectFQCN) {
-                        System.out.printf("Class %s does not have the correct fully qualified class name: " +
-                                        "expected %s and got %s", c.getName(), FQCN_PREFIX + c.getSimpleName(),
-                                c.getName());
-                        hasError = true;
-                    }
-                    if (hasError) {
-                        throw new InvalidPluginException();
-                    }
-
-                    controller.registerPlugin(c, loader);
-                } catch (ClassNotFoundException e) {
-                    System.out.println("Unable to load class " + e.getMessage());
-                }
-
-            });
-
-        } catch (Exception e) {
-            System.err.println("An unexpected error occurred: " + e.getMessage());
-        }
-    }
 
 }

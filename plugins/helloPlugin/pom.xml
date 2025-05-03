@@ -22,6 +22,7 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
+                <targetPath>META-INF</targetPath>
                 <includes>
                     <include>plugin.properties</include>
                 </includes>
@@ -49,7 +50,7 @@
                         <configuration>
                             <target>
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
-                                      todir="${project.basedir}/../../../plugin-loader/plugins"
+                                      todir="${project.basedir}/../../../PluginLoader/plugins"
                                       overwrite="true"/>
                             </target>
                         </configuration>

@@ -1,13 +1,14 @@
 package com.doctordaddysir.plugins.loaders;
 
-import com.doctordaddysir.ui.PluginCommandLineUI;
-import com.doctordaddysir.utils.classScanner.filters.ClassFilter;
-import com.doctordaddysir.utils.classScanner.FilteredClassScanner;
-import com.doctordaddysir.utils.classScanner.filters.PluginFilter;
+
 import com.doctordaddysir.exceptions.InvalidPluginException;
 import com.doctordaddysir.plugins.Plugin;
+import com.doctordaddysir.ui.PluginCommandLineUI;
 import com.doctordaddysir.ui.PluginUI;
 import com.doctordaddysir.utils.LifeCycleUtils;
+import com.doctordaddysir.utils.classScanner.FilteredClassScanner;
+import com.doctordaddysir.utils.classScanner.filters.ClassFilter;
+import com.doctordaddysir.utils.classScanner.filters.PluginFilter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

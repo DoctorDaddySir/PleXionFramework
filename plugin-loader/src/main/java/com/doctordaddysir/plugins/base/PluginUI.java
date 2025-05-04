@@ -18,7 +18,7 @@ public abstract class PluginUI {
 
     public abstract void registerPlugin(Class<?> clazz);
     public abstract void start();
-
+    public abstract void start(Boolean debugMode);
     public abstract void setDebugMode(Boolean debugMode);
 
 }

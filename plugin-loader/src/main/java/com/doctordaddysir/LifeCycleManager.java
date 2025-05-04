@@ -13,15 +13,18 @@ import static com.doctordaddysir.proxies.PluginProxyUtils.stripProxy;
 @Slf4j
 public class LifeCycleManager {
     public static void invokeLoad(Object plugin) {
+        log.debug("Invoking @OnLoad on plugin: {}", plugin.getClass().getName());
         invokeNoArgAnnotatedMethod(plugin, OnLoad.class);
     }
     public static void invokeDestroy(Object plugin) {
+        log.debug("Invoking @OnDestroy on plugin: {}", plugin.getClass().getName());
         invokeNoArgAnnotatedMethod(plugin, OnDestroy.class);
     }
 
 
 
     public static void invokeError(Object plugin, Throwable t){
+        log.debug("Invoking @OnError on plugin: {}", plugin.getClass().getName());
 
         plugin = stripProxy(plugin);
 
@@ -53,7 +56,7 @@ public class LifeCycleManager {
                     method.setAccessible(true);
                     method.invoke(plugin);
                 } catch (Exception e) {
-                    log.error("Failed to invoke @OnDestroy: {}", e.getMessage());
+                    log.error("Failed to invoke {}: {}", annotation.getSimpleName(), e.getMessage());
                 }
             }
         }

@@ -1,6 +1,7 @@
 package com.doctordaddysir;
 
 
+import ch.qos.logback.classic.Logger;
 import com.doctordaddysir.annotations.AnnotationUtils;
 import com.doctordaddysir.plugins.base.Plugin;
 import com.doctordaddysir.plugins.base.PluginUI;
@@ -36,15 +37,22 @@ public class PluginCommandLineUI extends PluginUI {
 
     @Override
     public void setDebugMode(Boolean debugMode) {
+        Logger logger = (Logger) log;
         if(debugMode){
-            log.atLevel(Level.DEBUG);
+            logger.setLevel(ch.qos.logback.classic.Level.DEBUG);
+            log.debug("Debug mode enabled");
         } else {
-            log.atLevel(Level.INFO);
+            logger.setLevel(ch.qos.logback.classic.Level.INFO);
         }
         this.isDebugMode = debugMode;
 
     }
 
+
+    public void start(Boolean debugMode) {
+        PluginLoader.loadPluginsAndReportErrors(debugMode);
+        start();
+    }
     @Override
     public void start() {
         System.out.println("PluginController started. press enter to continue");

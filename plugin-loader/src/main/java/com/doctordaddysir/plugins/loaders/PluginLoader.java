@@ -7,6 +7,8 @@ import com.doctordaddysir.plugins.PluginClassLoader;
 import com.doctordaddysir.plugins.base.Plugin;
 import com.doctordaddysir.exceptions.InvalidPluginException;
 import com.doctordaddysir.plugins.base.PluginUI;
+import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -22,8 +24,10 @@ import java.util.jar.JarFile;
 public class PluginLoader {
     private final static String DIRECTORY_NAME = "plugins";
     private final static PluginUI ui = PluginCommandLineUI.builder().build();
+    @Getter
     private final static Map<String, List<PluginLoadError>> pluginLoadErrors =
             new HashMap<>();
+    @Getter
     private final static Set<String> successfullyRegisteredPlugins = new HashSet<>();
 
 
@@ -45,11 +49,38 @@ public class PluginLoader {
         });
     }
 
+    public static PluginUI loadPluginsAndReportErrors(Boolean debugMode) {
+        try {
+            PluginUI pluginUI = loadPlugins(debugMode);
+            reportErrors();
+            return pluginUI;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void reportErrors() {
+        if(hasPluginErrors()){
+            log.error("The following plugins failed to load:");
+            pluginLoadErrors.forEach((fqcn, errors)->{
+                log.error("Plugin: {} failed to load. Reasons:",fqcn);
+                errors.forEach(error->{
+                    log.error("Result: {}, Error: {}",error.getResult(),error.getThrowable().getMessage());
+                });
+            });
+        }
+    }
+
+    private static boolean hasPluginErrors() {
+        return pluginLoadErrors.values().stream().anyMatch(errors-> !errors.isEmpty());
+    }
+
     public PluginUI getController() {
         return ui;
     }
 
-    public static PluginUI loadPlugins() throws IOException {
+    public static PluginUI loadPlugins(Boolean debugMode) throws IOException {
+        ui.setDebugMode(debugMode);
         File pluginDir = new File(DIRECTORY_NAME);
         if (!pluginDir.exists()) {
             log.info("No plugins found in " + DIRECTORY_NAME);
@@ -65,29 +96,23 @@ public class PluginLoader {
     }
 
 
+    @Getter
     private static class PluginLoadError {
         private PluginLoadResult result;
-        private Throwable t;
+        private Throwable throwable;
 
 
         public PluginLoadError(PluginLoadResult result) {
             this.result = result;
-            this.t = null;
+            this.throwable = null;
         }
 
         public PluginLoadError(PluginLoadResult result,
-                               Throwable t) {
+                               Throwable throwable) {
             this.result = result;
-            this.t = t;
+            this.throwable = throwable;
         }
 
-        public PluginLoadResult getResult() {
-            return result;
-        }
-
-        public Throwable getT() {
-            return t;
-        }
     }
 
     public enum PluginLoadResult {
@@ -98,6 +123,7 @@ public class PluginLoader {
         IO_ERROR
     }
 
+    @Data
     private static class PluginValidator {
         private Set<PluginLoadError> results = new HashSet<>();
     }

@@ -3,6 +3,8 @@ package com.doctordaddysir.utils.classScanner.filters;
 
 import com.doctordaddysir.annotations.PluginInfo;
 import com.doctordaddysir.exceptions.InvalidPluginException;
+import com.doctordaddysir.plugins.loaders.PluginLoader;
+import com.doctordaddysir.utils.ReflectionUtils;
 import lombok.extern.slf4j.Slf4j;
 import com.doctordaddysir.plugins.Plugin;
 
@@ -14,9 +16,10 @@ public class PluginFilter implements ClassFilter {
         Class<?> clazz = null;
         try {
             clazz = classLoader.loadClass(className);
-            if(checkForPluginInfo(clazz) && checkForPluginInterface(clazz)){
+            hasInterface(clazz, Plugin.class);
+            checkForPluginInfo(clazz);
                 return true;
-            }
+
         } catch (ClassNotFoundException e) {
             log.error("Class not found: {}", className);
         } catch (InvalidPluginException e) {
@@ -26,19 +29,18 @@ public class PluginFilter implements ClassFilter {
         return false;
     }
 
-    private Boolean checkForPluginInterface(Class<?> clazz) throws InvalidPluginException {
-        if(Plugin.class.isAssignableFrom(clazz)){
-            return true;
+    private void hasInterface(Class<?> clazz, Class<?> intr) throws InvalidPluginException {
+        if(ReflectionUtils.hasInterface(clazz, intr)){
+            return;
         }
-        log.debug("Class {} does not implement Plugin interface", clazz.getName());
-        return false;
+        throw new InvalidPluginException(PluginLoader.PluginLoadResult.INVALID_PLUGIN_TYPE);
+
     }
 
-    private Boolean checkForPluginInfo(Class<?> clazz) throws InvalidPluginException {
-        if(clazz.isAnnotationPresent(PluginInfo.class)){
-            return true;
+    private void checkForPluginInfo(Class<?> clazz) throws InvalidPluginException {
+        if(ReflectionUtils.hasAnnotation(clazz, PluginInfo.class)){
+            return;
         }
-        log.debug("Class {} does not have PluginInfo annotation", clazz.getName());
-        return false;
+        throw new InvalidPluginException(PluginLoader.PluginLoadResult.MISSING_ANNOTATION);
     }
 }

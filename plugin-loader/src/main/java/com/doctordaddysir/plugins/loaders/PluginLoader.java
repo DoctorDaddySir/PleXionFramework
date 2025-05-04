@@ -72,31 +72,6 @@ public class PluginLoader {
     }
 
 
-    @Getter
-    private static class PluginLoadError {
-        private PluginLoadResult result;
-        private Throwable throwable;
-
-
-        public PluginLoadError(PluginLoadResult result) {
-            this.result = result;
-            this.throwable = new InvalidPluginException(result);
-        }
-
-        public PluginLoadError(Throwable throwable) {
-            this.result = result;
-            this.throwable = throwable;
-        }
-
-    }
-
-    public enum PluginLoadResult {
-        SUCCESS,
-        CLASS_NOT_FOUND,
-        MISSING_ANNOTATION,
-        INVALID_PLUGIN_TYPE,
-        IO_ERROR
-    }
 
     private static void resetPluginErrorMap() {
         Arrays.stream(PluginLoadResult.values()).forEach(result -> pluginLoadErrors.put(result, new ArrayList<>()));
@@ -133,6 +108,31 @@ public class PluginLoader {
             proxies.put(fqcn, null);
 
         });
+    }
+    @Getter
+    private static class PluginLoadError {
+        private PluginLoadResult result;
+        private Throwable throwable;
+
+
+        public PluginLoadError(PluginLoadResult result) {
+            this.result = result;
+            this.throwable = new InvalidPluginException(result);
+        }
+
+        public PluginLoadError(Throwable throwable) {
+            this.result = result;
+            this.throwable = throwable;
+        }
+
+    }
+
+    public enum PluginLoadResult {
+        SUCCESS,
+        CLASS_NOT_FOUND,
+        MISSING_ANNOTATION,
+        INVALID_PLUGIN_TYPE,
+        IO_ERROR
     }
 
 

@@ -1,5 +1,8 @@
 package com.doctordaddysir.utils;
 
+
+
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -47,6 +50,20 @@ public class ReflectionUtils {
         }
         throw new NoSuchMethodException("No constructor found for " + clazz.getName() + " with " + args.length + " arguments");
 
+    }
+
+    public static Boolean hasInterface(Class<?> clazz, Class<?> intr)  {
+        if(intr.isAssignableFrom(clazz)){
+            return true;
+        }
+        return false;
+    }
+
+    public static Boolean hasAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
+        if(clazz.isAnnotationPresent(annotation)){
+            return true;
+        }
+        return false;
     }
 }
 

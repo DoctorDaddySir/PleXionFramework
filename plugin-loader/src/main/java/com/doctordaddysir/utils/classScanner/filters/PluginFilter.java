@@ -1,10 +1,10 @@
-package com.doctordaddysir.classScanner;
+package com.doctordaddysir.utils.classScanner.filters;
 
 
 import com.doctordaddysir.annotations.PluginInfo;
 import com.doctordaddysir.exceptions.InvalidPluginException;
 import lombok.extern.slf4j.Slf4j;
-import com.doctordaddysir.plugins.base.Plugin;
+import com.doctordaddysir.plugins.Plugin;
 
 @Slf4j
 public class PluginFilter implements ClassFilter {

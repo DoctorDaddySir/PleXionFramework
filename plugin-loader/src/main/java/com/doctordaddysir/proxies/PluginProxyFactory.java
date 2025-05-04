@@ -1,6 +1,6 @@
 package com.doctordaddysir.proxies;
 
-import com.doctordaddysir.plugins.base.Plugin;
+import com.doctordaddysir.plugins.Plugin;
 
 import java.lang.reflect.Proxy;
 

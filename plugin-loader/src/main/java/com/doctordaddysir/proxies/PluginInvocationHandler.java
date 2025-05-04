@@ -1,6 +1,6 @@
 package com.doctordaddysir.proxies;
 
-import com.doctordaddysir.plugins.base.Plugin;
+import com.doctordaddysir.plugins.Plugin;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

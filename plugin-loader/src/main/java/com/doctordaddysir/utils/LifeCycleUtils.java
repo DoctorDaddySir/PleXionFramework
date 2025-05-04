@@ -1,4 +1,4 @@
-package com.doctordaddysir.plugins.utils;
+package com.doctordaddysir.utils;
 
 import com.doctordaddysir.annotations.OnDestroy;
 import com.doctordaddysir.annotations.OnError;
@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import static com.doctordaddysir.proxies.PluginProxyUtils.stripProxy;
+import static com.doctordaddysir.utils.PluginProxyUtils.stripProxy;
 
 @Slf4j
 public class LifeCycleUtils {

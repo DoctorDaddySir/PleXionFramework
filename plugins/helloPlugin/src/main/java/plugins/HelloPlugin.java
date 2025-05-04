@@ -5,7 +5,7 @@ import com.doctordaddysir.annotations.OnDestroy;
 import com.doctordaddysir.annotations.OnError;
 import com.doctordaddysir.annotations.OnLoad;
 import com.doctordaddysir.annotations.PluginInfo;
-import com.doctordaddysir.plugins.base.Plugin;
+import com.doctordaddysir.plugins.Plugin;
 
 @PluginInfo(name = "HelloPlugin", description = "A simple plugin that prints a hello message.")
 public class HelloPlugin implements Plugin {

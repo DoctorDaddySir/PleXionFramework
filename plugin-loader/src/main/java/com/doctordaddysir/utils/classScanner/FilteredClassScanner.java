@@ -1,8 +1,9 @@
-package com.doctordaddysir.classScanner;
+package com.doctordaddysir.utils.classScanner;
 
 
-import com.doctordaddysir.plugins.PluginClassLoader;
-import com.doctordaddysir.plugins.base.Plugin;
+import com.doctordaddysir.plugins.loaders.PluginClassLoader;
+import com.doctordaddysir.plugins.Plugin;
+import com.doctordaddysir.utils.classScanner.filters.ClassFilter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;

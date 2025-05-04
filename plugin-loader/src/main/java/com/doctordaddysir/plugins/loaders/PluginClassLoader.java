@@ -1,4 +1,4 @@
-package com.doctordaddysir.plugins;
+package com.doctordaddysir.plugins.loaders;
 
 import java.net.URL;
 import java.net.URLClassLoader;

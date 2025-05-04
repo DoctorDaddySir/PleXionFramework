@@ -1,26 +1,20 @@
 package com.doctordaddysir.plugins.loaders;
 
-import com.doctordaddysir.PluginCommandLineUI;
-import com.doctordaddysir.classScanner.ClassFilter;
-import com.doctordaddysir.classScanner.FilteredClassScanner;
-import com.doctordaddysir.classScanner.PluginFilter;
+import com.doctordaddysir.ui.PluginCommandLineUI;
+import com.doctordaddysir.utils.classScanner.filters.ClassFilter;
+import com.doctordaddysir.utils.classScanner.FilteredClassScanner;
+import com.doctordaddysir.utils.classScanner.filters.PluginFilter;
 import com.doctordaddysir.exceptions.InvalidPluginException;
-import com.doctordaddysir.plugins.PluginClassLoader;
-import com.doctordaddysir.plugins.base.Plugin;
-import com.doctordaddysir.plugins.base.PluginUI;
-import com.doctordaddysir.plugins.utils.LifeCycleUtils;
-import lombok.Data;
+import com.doctordaddysir.plugins.Plugin;
+import com.doctordaddysir.ui.PluginUI;
+import com.doctordaddysir.utils.LifeCycleUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 @Slf4j
 public class PluginLoader {

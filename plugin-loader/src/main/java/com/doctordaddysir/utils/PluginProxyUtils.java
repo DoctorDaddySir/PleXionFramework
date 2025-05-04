@@ -1,7 +1,7 @@
-package com.doctordaddysir.proxies;
+package com.doctordaddysir.utils;
 
-import com.doctordaddysir.plugins.utils.LifeCycleUtils;
-import com.doctordaddysir.plugins.base.Plugin;
+import com.doctordaddysir.plugins.Plugin;
+import com.doctordaddysir.proxies.PluginInvocationHandler;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;

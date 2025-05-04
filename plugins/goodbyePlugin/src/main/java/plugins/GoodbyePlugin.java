@@ -4,7 +4,7 @@ import com.doctordaddysir.annotations.OnDestroy;
 import com.doctordaddysir.annotations.OnError;
 import com.doctordaddysir.annotations.OnLoad;
 import com.doctordaddysir.annotations.PluginInfo;
-import com.doctordaddysir.plugins.base.Plugin;
+import com.doctordaddysir.plugins.Plugin;
 
 @PluginInfo(name = "GoodbyePlugin", description = "A simple plugin that says goodbye")
 public final class GoodbyePlugin implements Plugin {

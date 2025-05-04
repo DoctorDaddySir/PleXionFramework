@@ -1,5 +1,6 @@
-package com.doctordaddysir.plugins.base;
+package com.doctordaddysir.ui;
 
+import com.doctordaddysir.plugins.Plugin;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;

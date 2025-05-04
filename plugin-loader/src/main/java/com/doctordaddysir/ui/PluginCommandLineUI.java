@@ -1,15 +1,14 @@
-package com.doctordaddysir;
+package com.doctordaddysir.ui;
 
 
 import ch.qos.logback.classic.Logger;
 import com.doctordaddysir.annotations.AnnotationUtils;
-import com.doctordaddysir.plugins.base.Plugin;
-import com.doctordaddysir.plugins.base.PluginUI;
+import com.doctordaddysir.plugins.Plugin;
 import com.doctordaddysir.plugins.loaders.PluginLoader;
-import com.doctordaddysir.plugins.utils.LifeCycleUtils;
-import com.doctordaddysir.plugins.utils.ReflectionUtils;
+import com.doctordaddysir.utils.LifeCycleUtils;
+import com.doctordaddysir.utils.ReflectionUtils;
 import com.doctordaddysir.proxies.PluginProxyFactory;
-import com.doctordaddysir.proxies.PluginProxyUtils;
+import com.doctordaddysir.utils.PluginProxyUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;

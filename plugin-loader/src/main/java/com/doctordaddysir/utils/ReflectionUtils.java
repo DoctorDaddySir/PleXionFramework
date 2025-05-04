@@ -1,4 +1,4 @@
-package com.doctordaddysir.plugins.utils;
+package com.doctordaddysir.utils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

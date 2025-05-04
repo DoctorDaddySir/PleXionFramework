@@ -1,4 +1,4 @@
-package com.doctordaddysir;
+package com.doctordaddysir.plugins;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -10,6 +10,7 @@ public class PluginClassLoader extends URLClassLoader {
 
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+
         Class<?> clazz = findLoadedClass(name);
         if (clazz == null) {
             try {

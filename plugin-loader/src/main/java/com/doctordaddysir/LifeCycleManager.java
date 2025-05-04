@@ -7,7 +7,8 @@ import com.doctordaddysir.annotations.OnLoad;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import static com.doctordaddysir.proxies.ProxyUtils.stripProxy;
+import static com.doctordaddysir.proxies.PluginProxyUtils.stripProxy;
+
 
 public class LifeCycleManager {
     public static void invokeLoad(Object plugin) {
@@ -32,7 +33,7 @@ public class LifeCycleManager {
                     method.setAccessible(true);
                     method.invoke(plugin, t);
                 } catch (Exception e) {
-                    System.err.println("Failed to invoke @OnError method: " + e.getMessage());
+                    System.err.println("Failed to invoke @OnError: " + e.getMessage());
                 }
             }
         }
@@ -51,7 +52,7 @@ public class LifeCycleManager {
                     method.setAccessible(true);
                     method.invoke(plugin);
                 } catch (Exception e) {
-                    System.err.println("Failed to invoke @" + annotation.getSimpleName() + ": " + e.getMessage());
+                    System.out.println("Failed to invoke @OnDestroy: " + e.getMessage() + "");
                 }
             }
         }

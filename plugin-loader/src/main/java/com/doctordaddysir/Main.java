@@ -1,12 +1,14 @@
 package com.doctordaddysir;
 
+import com.doctordaddysir.plugins.loaders.PluginLoader;
+
 import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
         try {
-            PluginDirectoryLoader
-                    .loadPluginsFromDirectory()
+            PluginLoader
+                    .loadPlugins()
                     .setDebugMode(true)
                     .start();
         } catch (IOException e) {

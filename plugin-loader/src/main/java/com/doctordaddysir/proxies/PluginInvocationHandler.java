@@ -1,6 +1,6 @@
 package com.doctordaddysir.proxies;
 
-import com.doctordaddysir.base.Plugin;
+import com.doctordaddysir.plugins.base.Plugin;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

@@ -6,6 +6,8 @@ import com.doctordaddysir.annotations.PluginInfo;
 import com.doctordaddysir.plugins.PluginClassLoader;
 import com.doctordaddysir.plugins.base.Plugin;
 import com.doctordaddysir.exceptions.InvalidPluginException;
+import com.doctordaddysir.plugins.base.PluginUI;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,10 +18,10 @@ import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-
+@Slf4j
 public class PluginLoader {
     private final static String DIRECTORY_NAME = "plugins";
-    private final static PluginCommandLineUI controller = new PluginCommandLineUI();
+    private final static PluginUI ui = PluginCommandLineUI.builder().build();
     private final static Map<String, List<PluginLoadError>> pluginLoadErrors =
             new HashMap<>();
     private final static Set<String> successfullyRegisteredPlugins = new HashSet<>();
@@ -43,22 +45,22 @@ public class PluginLoader {
         });
     }
 
-    public PluginCommandLineUI getController() {
-        return controller;
+    public PluginUI getController() {
+        return ui;
     }
 
-    public static PluginCommandLineUI loadPlugins() throws IOException {
+    public static PluginUI loadPlugins() throws IOException {
         File pluginDir = new File(DIRECTORY_NAME);
         if (!pluginDir.exists()) {
-            System.out.println("No plugins found in " + DIRECTORY_NAME);
-            return controller;
+            log.info("No plugins found in " + DIRECTORY_NAME);
+            return ui;
         }
 
         List<File> jarFiles =
                 List.of(Objects.requireNonNull(pluginDir.listFiles(f -> f.getName().endsWith(".jar"))));
 
         registerJars(jarFiles);
-        return controller;
+        return ui;
 
     }
 
@@ -126,14 +128,14 @@ public class PluginLoader {
                                 }
 
                             }else{
-                                System.out.printf("Plugin %s already registered. Skipping.\n", clazz.getName());
+                                log.debug("Plugin {} already registered. Skipping.", clazz.getName());
                             }
                         } catch (ClassNotFoundException e) {
                             pluginLoadErrors.get(className).add(new PluginLoadError(PluginLoadResult.CLASS_NOT_FOUND, e));
                         }
                         pluginLoadErrors.get(className).stream().forEach(
                                 attempt->{
-                                    System.out.printf("Plugin %s failed to load: %s. Reason: %s %n",className, attempt.getResult());
+                                    log.debug("Plugin {} failed to load. Reason: {}",className, attempt.getResult());
                                 }
                         );
                     }
@@ -173,7 +175,7 @@ public class PluginLoader {
     }
 
     private static void registerPlugins(List<Class<?>> annotatedPlugins) {
-        annotatedPlugins.forEach(clazz -> controller.registerPlugin(clazz))
+        annotatedPlugins.forEach(clazz -> ui.registerPlugin(clazz))
         ;
     }
 

@@ -3,13 +3,14 @@ package com.doctordaddysir;
 import com.doctordaddysir.annotations.OnDestroy;
 import com.doctordaddysir.annotations.OnError;
 import com.doctordaddysir.annotations.OnLoad;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import static com.doctordaddysir.proxies.PluginProxyUtils.stripProxy;
 
-
+@Slf4j
 public class LifeCycleManager {
     public static void invokeLoad(Object plugin) {
         invokeNoArgAnnotatedMethod(plugin, OnLoad.class);
@@ -33,7 +34,7 @@ public class LifeCycleManager {
                     method.setAccessible(true);
                     method.invoke(plugin, t);
                 } catch (Exception e) {
-                    System.err.println("Failed to invoke @OnError: " + e.getMessage());
+                    log.error("Failed to invoke @OnError: {}", e.getMessage());
                 }
             }
         }
@@ -52,7 +53,7 @@ public class LifeCycleManager {
                     method.setAccessible(true);
                     method.invoke(plugin);
                 } catch (Exception e) {
-                    System.out.println("Failed to invoke @OnDestroy: " + e.getMessage() + "");
+                    log.error("Failed to invoke @OnDestroy: {}", e.getMessage());
                 }
             }
         }

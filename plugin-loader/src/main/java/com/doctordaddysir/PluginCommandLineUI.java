@@ -8,23 +8,45 @@ import com.doctordaddysir.plugins.loaders.PluginLoader;
 import com.doctordaddysir.plugins.utils.ReflectionUtils;
 import com.doctordaddysir.proxies.PluginProxyFactory;
 import com.doctordaddysir.proxies.PluginProxyUtils;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.event.Level;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-
-public class PluginCommandLineUI extends PluginUI<PluginCommandLineUI> {
-
-    private Scanner scanner;
+@SuperBuilder
+@Getter
+@Slf4j
+public class PluginCommandLineUI extends PluginUI {
+    @Builder.Default
+    private Scanner scanner = new Scanner(System.in);
+    @Builder.Default
     private Boolean isDebugMode = false;
+    @Builder.Default
     private List<Class<?>> plugins = new ArrayList<>();
+    @Builder.Default
     private final Map<String, Plugin> instantiatedPlugins = new HashMap<>();
+    @Builder.Default
     private final Map<String, ClassLoader> classLoaders = new HashMap<>();
+    @Builder.Default
     private final Map<String, Plugin> proxies = new HashMap<>();
 
     @Override
+    public void setDebugMode(Boolean debugMode) {
+        if(debugMode){
+            log.atLevel(Level.DEBUG);
+        } else {
+            log.atLevel(Level.INFO);
+        }
+        this.isDebugMode = debugMode;
+
+    }
+
+    @Override
     public void start() {
-        this.scanner = new Scanner(System.in);
         System.out.println("PluginController started. press enter to continue");
         scanner.nextLine();
         startLoop();
@@ -79,20 +101,13 @@ public class PluginCommandLineUI extends PluginUI<PluginCommandLineUI> {
                 } catch (InstantiationException | IllegalAccessException |
                          InvocationTargetException |
                          NoSuchMethodException e) {
-                    System.err.println("Error instantiating plugin: " + e.getMessage());
+                    log.error("Error instantiating plugin: {}", e.getMessage());
                 }
             }
         }
         scanner.close();
         PluginLoader.destroyPlugins(instantiatedPlugins, classLoaders, proxies);
     }
-
-    @Override
-    public PluginCommandLineUI setDebugMode(Boolean debugMode) {
-        this.isDebugMode = debugMode;
-        return this;
-    }
-
 
     private void clearConsole() {
         for (int i = 0; i < 50; i++) {
@@ -103,6 +118,20 @@ public class PluginCommandLineUI extends PluginUI<PluginCommandLineUI> {
 
     @Override
     public void out(String message) {
-        System.out.println(message);
+        //not implemented in CLI
     }
+
+    @Override
+    public void registerPlugin(Class<?> clazz) {
+
+        if (Plugin.class.isAssignableFrom(clazz)) {
+            plugins.add(clazz);
+            classLoaders.put(clazz.getName(), clazz.getClassLoader());
+            log.debug(AnnotationUtils.readPluginInfo(clazz));
+
+        } else {
+            log.error("Class: {} does not implement PluginInterface", clazz.getName());
+        }
+    }
+
 }

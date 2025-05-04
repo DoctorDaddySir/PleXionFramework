@@ -1,6 +1,6 @@
 package com.doctordaddysir.proxies;
 
-import com.doctordaddysir.LifeCycleManager;
+import com.doctordaddysir.plugins.utils.LifeCycleUtils;
 import com.doctordaddysir.plugins.base.Plugin;
 
 import java.lang.reflect.InvocationHandler;
@@ -38,7 +38,7 @@ public class PluginProxyUtils {
         try {
             proxy.execute();
         }catch (Exception e) {
-            LifeCycleManager.invokeError(plugin, e);
+            LifeCycleUtils.invokeError(plugin, e);
         }
     }
 
@@ -46,7 +46,7 @@ public class PluginProxyUtils {
         try {
             plugin.execute();
         }catch (Exception e) {
-            LifeCycleManager.invokeError(plugin, e);
+            LifeCycleUtils.invokeError(plugin, e);
         }
     }
 

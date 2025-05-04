@@ -1,4 +1,4 @@
-package com.doctordaddysir;
+package com.doctordaddysir.plugins.utils;
 
 import com.doctordaddysir.annotations.OnDestroy;
 import com.doctordaddysir.annotations.OnError;
@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import static com.doctordaddysir.proxies.PluginProxyUtils.stripProxy;
 
 @Slf4j
-public class LifeCycleManager {
+public class LifeCycleUtils {
     public static void invokeLoad(Object plugin) {
         log.debug("Invoking @OnLoad on plugin: {}", plugin.getClass().getName());
         invokeNoArgAnnotatedMethod(plugin, OnLoad.class);
@@ -20,9 +20,6 @@ public class LifeCycleManager {
         log.debug("Invoking @OnDestroy on plugin: {}", plugin.getClass().getName());
         invokeNoArgAnnotatedMethod(plugin, OnDestroy.class);
     }
-
-
-
     public static void invokeError(Object plugin, Throwable t){
         log.debug("Invoking @OnError on plugin: {}", plugin.getClass().getName());
 
@@ -45,6 +42,19 @@ public class LifeCycleManager {
     }
 
 
+    private static void invokeNoArgMethod(Object plugin, String methodName) {
+        plugin = stripProxy(plugin);
+        for (Method method : plugin.getClass().getDeclaredMethods()) {
+            if (method.getName().equals(methodName) && method.getParameterCount() == 0) {
+                try {
+                    method.setAccessible(true);
+                    method.invoke(plugin);
+                } catch (Exception e) {
+                    log.error("Failed to invoke {}: {}", methodName, e.getMessage());
+                }
+            }
+        }
+    }
     private static void invokeNoArgAnnotatedMethod(Object plugin, Class<? extends Annotation> annotation) {
 
         plugin = stripProxy(plugin);

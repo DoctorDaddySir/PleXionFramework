@@ -3,9 +3,9 @@ package com.doctordaddysir.plugins.loaders;
 
 import com.doctordaddysir.exceptions.InvalidPluginException;
 import com.doctordaddysir.plugins.Plugin;
-import com.doctordaddysir.ui.PluginCommandLineUI;
-import com.doctordaddysir.ui.PluginUI;
-import com.doctordaddysir.utils.LifeCycleUtils;
+import com.doctordaddysir.ui.PlexionCommandLineUI;
+import com.doctordaddysir.ui.PlexionUI;
+import com.doctordaddysir.utils.LifeCycleHandler;
 import com.doctordaddysir.utils.classScanner.FilteredClassScanner;
 import com.doctordaddysir.utils.classScanner.filters.ClassFilter;
 import com.doctordaddysir.utils.classScanner.filters.PluginFilter;
@@ -20,7 +20,7 @@ import java.util.*;
 @Slf4j
 public class PluginLoader {
     private final static String DIRECTORY_NAME = "plugins";
-    private final static PluginUI ui = PluginCommandLineUI.builder().build();
+    private final static PlexionUI ui = PlexionCommandLineUI.builder().build();
     @Getter
     private final static Map<PluginLoadResult, List<PluginLoadError>> pluginLoadErrors =
             new HashMap<>();
@@ -30,17 +30,17 @@ public class PluginLoader {
     private final static ClassFilter pluginFilter = new PluginFilter();
 
 
-    public static PluginUI loadPluginsAndReportErrors(Boolean debugMode) {
+    public static PlexionUI loadPluginsAndReportErrors(Boolean debugMode) {
         try {
-            PluginUI pluginUI = loadPlugins(debugMode);
+            PlexionUI plexionUI = loadPlugins(debugMode);
             reportErrors();
-            return pluginUI;
+            return plexionUI;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static PluginUI loadPlugins(Boolean debugMode) throws IOException {
+    public static PlexionUI loadPlugins(Boolean debugMode) throws IOException {
         ui.setDebugMode(debugMode);
         File pluginDir = new File(DIRECTORY_NAME);
         if (!pluginDir.exists()) {
@@ -97,7 +97,7 @@ public class PluginLoader {
                     , Plugin> proxies) {
         instantiatedPlugins.keySet().forEach(fqcn -> {
             Plugin plugin = instantiatedPlugins.get(fqcn);
-            LifeCycleUtils.invokeDestroy(plugin);
+            LifeCycleHandler.invokeDestroy(plugin);
             instantiatedPlugins.put(fqcn, null);
             try {
                 ((URLClassLoader) classLoaders.get(fqcn)).close();

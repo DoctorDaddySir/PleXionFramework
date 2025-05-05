@@ -38,7 +38,7 @@ public class PluginProxyUtils {
         try {
             proxy.execute();
         }catch (Exception e) {
-            LifeCycleUtils.invokeError(plugin, e);
+            LifeCycleHandler.invokeError(plugin, e);
         }
     }
 
@@ -46,7 +46,7 @@ public class PluginProxyUtils {
         try {
             plugin.execute();
         }catch (Exception e) {
-            LifeCycleUtils.invokeError(plugin, e);
+            LifeCycleHandler.invokeError(plugin, e);
         }
     }
 

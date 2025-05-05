@@ -3,14 +3,16 @@ package com.doctordaddysir.ui;
 
 import ch.qos.logback.classic.Logger;
 import com.doctordaddysir.annotations.AnnotationUtils;
+import com.doctordaddysir.annotations.Bean;
 import com.doctordaddysir.plugins.Plugin;
 import com.doctordaddysir.plugins.loaders.PluginLoader;
-import com.doctordaddysir.utils.LifeCycleUtils;
+import com.doctordaddysir.utils.LifeCycleHandler;
 import com.doctordaddysir.utils.ReflectionUtils;
 import com.doctordaddysir.proxies.PluginProxyFactory;
 import com.doctordaddysir.utils.PluginProxyUtils;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,7 +22,9 @@ import java.util.*;
 @SuperBuilder
 @Getter
 @Slf4j
-public class PluginCommandLineUI extends PluginUI {
+@Bean
+@NoArgsConstructor
+public class PlexionCommandLineUI extends PlexionUI {
     @Builder.Default
     private Scanner scanner = new Scanner(System.in);
     @Builder.Default
@@ -100,7 +104,7 @@ public class PluginCommandLineUI extends PluginUI {
                     } else {
                         instantiatedPlugins.put(plugin.getClass().getName(), plugin);
                     }
-                    LifeCycleUtils.invokeLoad(plugin);
+                    LifeCycleHandler.invokeLoad(plugin);
                     PluginProxyUtils.executePluginOrProxy(plugin, proxy);
                     System.out.println("Plugin executed successfully. Press enter to " +
                             "continue...");

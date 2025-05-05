@@ -5,14 +5,13 @@ import com.doctordaddysir.annotations.OnError;
 import com.doctordaddysir.annotations.OnLoad;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import static com.doctordaddysir.utils.MethodInvoker.invokeNoArgAnnotatedMethod;
 import static com.doctordaddysir.utils.PluginProxyUtils.stripProxy;
 
 @Slf4j
-public class LifeCycleUtils {
+public class LifeCycleHandler {
     public static void invokeLoad(Object plugin) {
         log.debug("Invoking @OnLoad on plugin: {}", plugin.getClass().getName());
         invokeNoArgAnnotatedMethod(plugin, OnLoad.class);

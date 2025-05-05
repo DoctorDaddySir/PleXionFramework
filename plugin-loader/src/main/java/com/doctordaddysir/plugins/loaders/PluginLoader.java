@@ -1,15 +1,19 @@
 package com.doctordaddysir.plugins.loaders;
 
 
+import com.doctordaddysir.annotations.Bean;
+import com.doctordaddysir.annotations.Inject;
+import com.doctordaddysir.annotations.PlexionBootLoader;
 import com.doctordaddysir.exceptions.InvalidPluginException;
 import com.doctordaddysir.plugins.Plugin;
-import com.doctordaddysir.ui.PlexionCommandLineUI;
 import com.doctordaddysir.ui.PlexionUI;
 import com.doctordaddysir.utils.LifeCycleHandler;
 import com.doctordaddysir.utils.classScanner.FilteredClassScanner;
 import com.doctordaddysir.utils.classScanner.filters.ClassFilter;
 import com.doctordaddysir.utils.classScanner.filters.PluginFilter;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -18,19 +22,30 @@ import java.net.URLClassLoader;
 import java.util.*;
 
 @Slf4j
+@Bean
+@NoArgsConstructor
 public class PluginLoader {
-    private final static String DIRECTORY_NAME = "plugins";
-    private final static PlexionUI ui = PlexionCommandLineUI.builder().build();
+    private final  String DIRECTORY_NAME = "plugins";
+    @Inject
+    private PlexionUI ui;
     @Getter
-    private final static Map<PluginLoadResult, List<PluginLoadError>> pluginLoadErrors =
+    private final  Map<PluginLoadResult, List<PluginLoadError>> pluginLoadErrors =
             new HashMap<>();
     @Getter
-    private final static Set<String> successfullyRegisteredPlugins = new HashSet<>();
+    private final  Set<String> successfullyRegisteredPlugins = new HashSet<>();
     @Getter
-    private final static ClassFilter pluginFilter = new PluginFilter();
+    private final  ClassFilter pluginFilter = new PluginFilter();
+    @Setter
+    @Getter
+    private PlexionBootLoader bootLoader;
 
 
-    public static PlexionUI loadPluginsAndReportErrors(Boolean debugMode) {
+    public void load(Boolean isDebug) {
+        loadPluginsAndReportErrors(isDebug).start(isDebug, this);
+    }
+
+
+    public  PlexionUI loadPluginsAndReportErrors(Boolean debugMode) {
         try {
             PlexionUI plexionUI = loadPlugins(debugMode);
             reportErrors();
@@ -40,7 +55,7 @@ public class PluginLoader {
         }
     }
 
-    public static PlexionUI loadPlugins(Boolean debugMode) throws IOException {
+    public  PlexionUI loadPlugins(Boolean debugMode) throws IOException {
         ui.setDebugMode(debugMode);
         File pluginDir = new File(DIRECTORY_NAME);
         if (!pluginDir.exists()) {
@@ -57,7 +72,7 @@ public class PluginLoader {
         return ui;
 
     }
-    private static void reportErrors() {
+    private  void reportErrors() {
         if(hasPluginErrors()){
             log.error("The following errors occurred while loading plugins:");
             pluginLoadErrors.forEach((result, errors) -> {
@@ -67,17 +82,17 @@ public class PluginLoader {
         }
     }
 
-    private static boolean hasPluginErrors() {
+    private  boolean hasPluginErrors() {
         return pluginLoadErrors.values().stream().anyMatch(errors-> !errors.isEmpty());
     }
 
 
 
-    private static void resetPluginErrorMap() {
+    private  void resetPluginErrorMap() {
         Arrays.stream(PluginLoadResult.values()).forEach(result -> pluginLoadErrors.put(result, new ArrayList<>()));
     }
 
-    private static void registerJars(List<File> files) {
+    private  void registerJars(List<File> files) {
         files.forEach(jarFile -> {
             List<Class<?>> filteredPlugins =
                     FilteredClassScanner.scanJarForClasses(jarFile, pluginFilter);
@@ -87,12 +102,12 @@ public class PluginLoader {
 
     }
 
-    private static void registerPlugins(List<Class<?>> filteredPlugins) {
+    private  void registerPlugins(List<Class<?>> filteredPlugins) {
         filteredPlugins.forEach(ui::registerPlugin);
     }
 
 
-    public static void destroyPlugins(Map<String, Plugin> instantiatedPlugins,
+    public  void destroyPlugins(Map<String, Plugin> instantiatedPlugins,
                                       Map<String, ClassLoader> classLoaders, Map<String
                     , Plugin> proxies) {
         instantiatedPlugins.keySet().forEach(fqcn -> {
@@ -109,8 +124,13 @@ public class PluginLoader {
 
         });
     }
+
+    public void setBootLoader(PlexionBootLoader plexionBootLoader) {
+
+    }
+
     @Getter
-    private static class PluginLoadError {
+    private  class PluginLoadError {
         private PluginLoadResult result;
         private Throwable throwable;
 

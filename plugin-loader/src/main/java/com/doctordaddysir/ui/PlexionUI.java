@@ -1,13 +1,14 @@
 package com.doctordaddysir.ui;
 
 import com.doctordaddysir.plugins.Plugin;
+import com.doctordaddysir.plugins.loaders.PluginLoader;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 import java.util.Map;
 
-@SuperBuilder
+
 @NoArgsConstructor
 public abstract class PlexionUI {
     Boolean isDebugMode;
@@ -20,8 +21,7 @@ public abstract class PlexionUI {
     public abstract void out(String message);
 
     public abstract void registerPlugin(Class<?> clazz);
-    public abstract void start();
-    public abstract void start(Boolean debugMode);
+    public abstract void start(Boolean debugMode, PluginLoader loader);
     public abstract void setDebugMode(Boolean debugMode);
 
 }

@@ -10,61 +10,47 @@ import com.doctordaddysir.utils.LifeCycleHandler;
 import com.doctordaddysir.utils.ReflectionUtils;
 import com.doctordaddysir.proxies.PluginProxyFactory;
 import com.doctordaddysir.utils.PluginProxyUtils;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-@SuperBuilder
 @Getter
 @Slf4j
 @Bean
-@NoArgsConstructor
 public class PlexionCommandLineUI extends PlexionUI {
-    @Builder.Default
     private Scanner scanner = new Scanner(System.in);
-    @Builder.Default
     private Boolean isDebugMode = false;
-    @Builder.Default
     private List<Class<?>> plugins = new ArrayList<>();
-    @Builder.Default
     private final Map<String, Plugin> instantiatedPlugins = new HashMap<>();
-    @Builder.Default
     private final Map<String, ClassLoader> classLoaders = new HashMap<>();
-    @Builder.Default
     private final Map<String, Plugin> proxies = new HashMap<>();
+
+    public PlexionCommandLineUI() {
+        super();
+    }
+
 
     @Override
     public void setDebugMode(Boolean debugMode) {
-        Logger logger = (Logger) log;
-        if(debugMode){
-            logger.setLevel(ch.qos.logback.classic.Level.DEBUG);
-            log.debug("Debug mode enabled");
-        } else {
-            logger.setLevel(ch.qos.logback.classic.Level.INFO);
-        }
         this.isDebugMode = debugMode;
 
     }
 
 
-    public void start(Boolean debugMode) {
-        PluginLoader.loadPluginsAndReportErrors(debugMode);
-        start();
-    }
     @Override
-    public void start() {
+    public void start(Boolean debugMode, PluginLoader loader) {
+        startUI(loader);
+    }
+    public void startUI(PluginLoader loader) {
         System.out.println("PluginController started. press enter to continue");
         scanner.nextLine();
-        startLoop();
+        startLoop(loader);
     }
 
 
-    private void startLoop() {
+    private void startLoop(PluginLoader loader) {
         while (true) {
             clearConsole();
             System.out.println("Available plugins:");
@@ -80,7 +66,7 @@ public class PlexionCommandLineUI extends PlexionUI {
                 choice = Integer.parseInt(input);
                 if (input.isEmpty()) {
                     System.out.println("Input cannot be empty. Try again.");
-                    startLoop();
+                    startLoop(loader);
                 }
             } catch (NumberFormatException e) {
                 System.err.println("Invalid input. Please enter a number.");
@@ -117,7 +103,7 @@ public class PlexionCommandLineUI extends PlexionUI {
             }
         }
         scanner.close();
-        PluginLoader.destroyPlugins(instantiatedPlugins, classLoaders, proxies);
+        loader.destroyPlugins(instantiatedPlugins, classLoaders, proxies);
     }
 
     private void clearConsole() {

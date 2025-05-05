@@ -12,16 +12,16 @@ import java.util.Set;
 
 public class FieldUtils {
 
-    public static Field injectField(Object target, Field field, Class<?> clazz) throws NoSuchFieldException, IllegalAccessException, InvalidFieldExcepton, NoSuchMethodException, InvocationTargetException, InstantiationException, IOException, ClassNotFoundException {
-        if(clazz.isInterface()){
-            clazz = (Class<?>) Objects.requireNonNull(ReflectionUtils.findImplementation(clazz)).getDeclaredConstructor().newInstance();
+    public static Field injectField(Object target, Field field, Object value) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException, IOException, ClassNotFoundException {
+        if(value.getClass().isInterface()){
+            value = (Class<?>) Objects.requireNonNull(ReflectionUtils.findImplementation(value.getClass())).getDeclaredConstructor().newInstance();
         }
-        if(ReflectionUtils.isAbstract(clazz)){
-           clazz=  ReflectionUtils.findClassForField(field);
+        if(ReflectionUtils.isAbstract(value.getClass())){
+           value=  ReflectionUtils.findClassForField(field);
         }
 
         ReflectionUtils.setAccessible(field);
-        field.set(target, ReflectionUtils.newInstance(clazz, null));
+        field.set(target, value);
         return field;
 
     }

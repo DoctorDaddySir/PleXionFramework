@@ -37,6 +37,7 @@ public class PluginLoader {
     private final  ClassFilter pluginFilter = new PluginFilter();
     @Setter
     @Getter
+    @Inject
     private PlexionBootLoader bootLoader;
 
 
@@ -125,8 +126,8 @@ public class PluginLoader {
         });
     }
 
-    public void setBootLoader(PlexionBootLoader plexionBootLoader) {
-
+    public PluginLoader setBootLoader(PlexionBootLoader plexionBootLoader) {
+        return this;
     }
 
     @Getter

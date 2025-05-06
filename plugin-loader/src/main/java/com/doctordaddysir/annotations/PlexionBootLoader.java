@@ -4,6 +4,9 @@ import ch.qos.logback.classic.Logger;
 import com.doctordaddysir.annotations.handlers.BeanCollector;
 import com.doctordaddysir.exceptions.InvalidBeanException;
 import com.doctordaddysir.plugins.loaders.PluginLoader;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
@@ -12,16 +15,21 @@ import java.util.List;
 
 @Slf4j
 @Bean
+@Data
 public class PlexionBootLoader {
     private final List<Object> instances = new ArrayList<>();
     private final List<Class<?>> loadedClasses = new ArrayList<>();
     private final BeanCollector beanCollector = new BeanCollector();
+    @Inject
     private final PluginLoader loader;
 
-    public PlexionBootLoader() throws InvalidBeanException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
-        this.loader =
-                (PluginLoader) beanCollector.getOrCreateBeanInstance(PluginLoader.class);
-        loader.setBootLoader(this);
+    @Injectable
+    public PlexionBootLoader(@Inject PluginLoader loader) {
+        this.loader = loader;
+    }
+
+    public PlexionBootLoader() {
+        this.loader = null;
     }
 
     public void boot(Boolean isDebug) {
@@ -33,7 +41,7 @@ public class PlexionBootLoader {
             logger.setLevel(ch.qos.logback.classic.Level.INFO);
         }
         beanCollector.collectBeans();
-        loader.load(isDebug);
+        this.loader.setBootLoader(this).load(isDebug);
 
     }
     private void addInstance(Object instance) {

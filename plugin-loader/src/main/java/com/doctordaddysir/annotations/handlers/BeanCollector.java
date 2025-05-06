@@ -1,6 +1,7 @@
 package com.doctordaddysir.annotations.handlers;
 
 import com.doctordaddysir.SystemInfo;
+import com.doctordaddysir.annotations.PlexionBootLoader;
 import com.doctordaddysir.exceptions.InvalidBeanException;
 import com.doctordaddysir.exceptions.InvalidFieldExcepton;
 import com.doctordaddysir.utils.AnnotationScanner;
@@ -87,11 +88,11 @@ public class BeanCollector {
             InstantiationException, NoSuchMethodException, RuntimeException {
         Object instance = getBeanInstance(clazz.getName());
         boolean doesNotExist = !containsBeanInstance(clazz.getName());
-        if (doesNotExist && InjectionUtils.hasInjectables(clazz)) {
+        if (doesNotExist && InjectionUtils.hasInjectableFields(clazz)) {
             try {
                 instance = clazz.getDeclaredConstructor().newInstance();
                 addBeanInstance(clazz.getName(), instance);
-                InjectionUtils.inject(instance, this);
+                InjectionUtils.injectFields(instance, this);
             } catch (IOException | NoSuchFieldException | ClassNotFoundException |
                      InvalidFieldExcepton e) {
                 throw new InvalidBeanException(e.getMessage());
@@ -107,5 +108,11 @@ public class BeanCollector {
     private Object getBeanInstance(String name) {
 
         return instantiatedBeans.get(name);
+    }
+
+    public void collectBeansAndStartBootLoader() throws InvalidBeanException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
+        collectBeans();
+        PlexionBootLoader plexion = (PlexionBootLoader) getOrCreateBeanInstance(PlexionBootLoader.class);
+        plexion.boot(false);
     }
 }

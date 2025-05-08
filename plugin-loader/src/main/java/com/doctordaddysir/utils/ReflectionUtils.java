@@ -2,11 +2,15 @@ package com.doctordaddysir.utils;
 
 
 import com.doctordaddysir.annotations.Bean;
+import com.doctordaddysir.cache.ReflectionCache;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,7 +19,8 @@ public class ReflectionUtils {
     public static Class<?> getClass(String className) throws ClassNotFoundException {
         return Class.forName(className);
     }
-    public static Object newInstance(Constructor<?> constructor, Object[] args ) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+
+    public static Object newInstance(Constructor<?> constructor, Object[] args) throws IllegalAccessException, InstantiationException, InvocationTargetException {
         if (constructor == null) {
             return null;
         }
@@ -24,7 +29,8 @@ public class ReflectionUtils {
         }
         return constructor.newInstance(args);
     }
-    public static Object newInstance(Class<?> clazz, Object[] args ) throws IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
+
+    public static Object newInstance(Class<?> clazz, Object[] args) throws IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
         if (clazz == null) {
             return null;
         }
@@ -33,19 +39,19 @@ public class ReflectionUtils {
         }
         Object instance;
         final Constructor<?>[] constructor = {null};
-        Arrays.stream(clazz.getDeclaredConstructors())
+        Arrays.stream(ReflectionCache.getConstructors(clazz))
                 .forEach(c -> {
                     boolean build = true;
                     Class<?>[] parameterTypes = c.getParameterTypes();
                     if (parameterTypes.length == args.length) {
-                    for (int i = 0; i < parameterTypes.length; i++) {
-                        if (!parameterTypes[i].isAssignableFrom(args[i].getClass())) {
-                            build =  false;
+                        for (int i = 0; i < parameterTypes.length; i++) {
+                            if (!parameterTypes[i].isAssignableFrom(args[i].getClass())) {
+                                build = false;
+                            }
                         }
                     }
-                }
-                    if(build){
-                        constructor[0] =c;
+                    if (build) {
+                        constructor[0] = c;
                     }
                 });
 
@@ -56,38 +62,21 @@ public class ReflectionUtils {
 
     }
 
-    public static Boolean hasInterface(Class<?> clazz, Class<?> intr)  {
-        if(intr.isAssignableFrom(clazz)){
+    public static Boolean hasInterface(Class<?> clazz, Class<?> intr) {
+        if (intr.isAssignableFrom(clazz)) {
             return true;
         }
         return false;
     }
 
-    public static Boolean hasAnnotation(Class<?> clazz, Class<? extends Annotation> annotation) {
-        if(clazz.isAnnotationPresent(annotation)){
+    public static Boolean hasAnnotation(Class<?> clazz,
+                                        Class<? extends Annotation> annotation) {
+        if (clazz.isAnnotationPresent(annotation)) {
             return true;
         }
         return false;
     }
 
-    public static void setAccessible(Object obj) {
-        if (obj == null) {
-            return;
-        }
-        if (obj instanceof Field) {
-            ((Field) obj).setAccessible(true);
-            log.debug("Field {} set accessible", ((Field) obj).getName());
-        }
-        if (obj instanceof Constructor) {
-            ((Constructor) obj).setAccessible(true);
-            log.debug("Constructor {} set accessible", ((Constructor) obj).getName());
-        }
-        if (obj instanceof Method) {
-            ((Method) obj).setAccessible(true);
-            log.debug("Method {} set accessible", ((Method) obj).getName());
-        }
-
-    }
 
     public static Class<?> findImplementation(Class<?> intr) {
         if (!intr.isInterface()) {
@@ -111,7 +100,8 @@ public class ReflectionUtils {
         return Modifier.isAbstract(clazz.getModifiers());
     }
 
-    public static Class<?> findClassForField(Field field) throws IOException, ClassNotFoundException {
+    public static Class<?> findClassForField(Field field) throws IOException,
+            ClassNotFoundException {
         Class<?> clazz = field.getType();
         if (clazz.isPrimitive()) {
             return clazz;
@@ -133,12 +123,38 @@ public class ReflectionUtils {
             resultClass = findImplementation(clazz);
         }
         if (isAbstract(clazz)) {
-            List<Class<?>> collect = AnnotationScanner.findClassesWithAnnotation(Bean.class, "com.doctordaddysir").stream()
+            List<Class<?>> collect =
+                    AnnotationScanner.findClassesWithAnnotation(Bean.class, "com" +
+                                    ".doctordaddysir").stream()
                     .filter(clazz::isAssignableFrom)
                     .filter(c -> !Modifier.isAbstract(c.getModifiers())).toList();
             return collect.getFirst();
         }
         return clazz;
     }
+
+    public enum ReflectionFieldError {
+        NO_SUCH_FIELD,
+        INACCESSIBLE_FIELD,
+        INACCESSIBLE_CLASS,
+        WRONG_TYPE;
+
+    }
+
+    public enum ReflectionClassError {
+        NO_SUCH_CLASS,
+        WRONG_TYPE,
+        MULTIPLE_IMPLEMENTATIONS,
+        NO_IMPLEMENTATION;
+    }
+
+    public enum ReflectionDIError {
+        INSTANTIATION_EXCEPTION,
+        ILLEGAL_ACCESS_EXCEPTION,
+        INVOCATION_TARGET_EXCEPTION,
+        NO_SUCH_METHOD_EXCEPTION;
+
+    }
+
 }
 

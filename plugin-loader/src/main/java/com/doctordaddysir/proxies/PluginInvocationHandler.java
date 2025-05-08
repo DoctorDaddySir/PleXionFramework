@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 @Slf4j
 public class PluginInvocationHandler implements InvocationHandler {
     private final Plugin target;
+
     public PluginInvocationHandler(Plugin target) {
         this.target = target;
     }
@@ -18,10 +19,12 @@ public class PluginInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         long start = System.currentTimeMillis();
-        log.debug("Executing method: {} in  plugin {}", method.getName(), target.getClass().getSimpleName());
+        log.debug("Executing method: {} in  plugin {}", method.getName(),
+                target.getClass().getSimpleName());
         Object result = method.invoke(target, args);
         long duration = System.currentTimeMillis() - start;
-        log.debug("Executed method: {} in plugin: {}",target.getClass().getName(), duration + "ms");
+        log.debug("Executed method: {} in plugin: {}", target.getClass().getName(),
+                duration + "ms");
         return result;
     }
 }

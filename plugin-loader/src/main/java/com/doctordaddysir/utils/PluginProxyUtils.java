@@ -25,19 +25,21 @@ public class PluginProxyUtils {
 
     public static Object stripProxy(Object plugin) {
         if (nonNull(plugin) && Proxy.isProxyClass(plugin.getClass())) {
-            PluginInvocationHandler invocationHandler = (PluginInvocationHandler) Proxy.getInvocationHandler(plugin);
+            PluginInvocationHandler invocationHandler =
+                    (PluginInvocationHandler) Proxy.getInvocationHandler(plugin);
             plugin = invocationHandler.getTarget();
         }
         return plugin;
     }
+
     public static void executePluginOrProxy(Plugin plugin, Plugin proxy) {
-        if(proxy == null) {
+        if (proxy == null) {
             executePluginOrProxy(plugin);
             return;
         }
         try {
             proxy.execute();
-        }catch (Exception e) {
+        } catch (Exception e) {
             LifeCycleHandler.invokeError(plugin, e);
         }
     }
@@ -45,7 +47,7 @@ public class PluginProxyUtils {
     public static void executePluginOrProxy(Plugin plugin) {
         try {
             plugin.execute();
-        }catch (Exception e) {
+        } catch (Exception e) {
             LifeCycleHandler.invokeError(plugin, e);
         }
     }

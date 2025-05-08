@@ -26,16 +26,16 @@ import java.util.*;
 @Bean
 @NoArgsConstructor
 public class PluginLoader {
-    private final  String DIRECTORY_NAME = "plugins";
-    @Inject
-    private PlexionUI ui;
+    private final String DIRECTORY_NAME = "plugins";
     @Getter
-    private final  Map<PluginLoadResult, List<PluginLoadError>> pluginLoadErrors =
+    private final Map<PluginLoadResult, List<PluginLoadError>> pluginLoadErrors =
             new HashMap<>();
     @Getter
-    private final  Set<String> successfullyRegisteredPlugins = new HashSet<>();
+    private final Set<String> successfullyRegisteredPlugins = new HashSet<>();
     @Getter
-    private final  ClassFilter pluginFilter = new PluginFilter();
+    private final ClassFilter pluginFilter = new PluginFilter();
+    @Inject
+    private PlexionUI ui;
     @Setter
     @Getter
     @Inject
@@ -52,7 +52,7 @@ public class PluginLoader {
     }
 
 
-    public  PlexionUI loadPluginsAndReportErrors(Boolean debugMode) {
+    public PlexionUI loadPluginsAndReportErrors(Boolean debugMode) {
         try {
             PlexionUI plexionUI = loadPlugins(debugMode);
             reportErrors();
@@ -62,7 +62,7 @@ public class PluginLoader {
         }
     }
 
-    public  PlexionUI loadPlugins(Boolean debugMode) throws IOException {
+    public PlexionUI loadPlugins(Boolean debugMode) throws IOException {
         ui.setDebugMode(debugMode);
         File pluginDir = new File(DIRECTORY_NAME);
         if (!pluginDir.exists()) {
@@ -79,27 +79,29 @@ public class PluginLoader {
         return ui;
 
     }
-    private  void reportErrors() {
-        if(hasPluginErrors()){
+
+    private void reportErrors() {
+        if (hasPluginErrors()) {
             log.error("The following errors occurred while loading plugins:");
             pluginLoadErrors.forEach((result, errors) -> {
-                if(errors.isEmpty()){return;}
+                if (errors.isEmpty()) {
+                    return;
+                }
                 log.error("{}: {} Plugins", result, errors.size());
             });
         }
     }
 
-    private  boolean hasPluginErrors() {
-        return pluginLoadErrors.values().stream().anyMatch(errors-> !errors.isEmpty());
+    private boolean hasPluginErrors() {
+        return pluginLoadErrors.values().stream().anyMatch(errors -> !errors.isEmpty());
     }
 
 
-
-    private  void resetPluginErrorMap() {
+    private void resetPluginErrorMap() {
         Arrays.stream(PluginLoadResult.values()).forEach(result -> pluginLoadErrors.put(result, new ArrayList<>()));
     }
 
-    private  void registerJars(List<File> files) {
+    private void registerJars(List<File> files) {
         files.forEach(jarFile -> {
             List<Class<?>> filteredPlugins =
                     FilteredClassScanner.scanJarForClasses(jarFile, pluginFilter);
@@ -109,13 +111,13 @@ public class PluginLoader {
 
     }
 
-    private  void registerPlugins(List<Class<?>> filteredPlugins) {
+    private void registerPlugins(List<Class<?>> filteredPlugins) {
         filteredPlugins.forEach(ui::registerPlugin);
     }
 
 
-    public  void destroyPlugins(Map<String, Plugin> instantiatedPlugins,
-                                      Map<String, ClassLoader> classLoaders, Map<String
+    public void destroyPlugins(Map<String, Plugin> instantiatedPlugins,
+                               Map<String, ClassLoader> classLoaders, Map<String
                     , Plugin> proxies) {
         instantiatedPlugins.keySet().forEach(fqcn -> {
             Plugin plugin = instantiatedPlugins.get(fqcn);
@@ -136,8 +138,16 @@ public class PluginLoader {
         return this;
     }
 
+    public enum PluginLoadResult {
+        SUCCESS,
+        CLASS_NOT_FOUND,
+        MISSING_ANNOTATION,
+        INVALID_PLUGIN_TYPE,
+        IO_ERROR
+    }
+
     @Getter
-    private  class PluginLoadError {
+    private class PluginLoadError {
         private PluginLoadResult result;
         private Throwable throwable;
 
@@ -152,14 +162,6 @@ public class PluginLoader {
             this.throwable = throwable;
         }
 
-    }
-
-    public enum PluginLoadResult {
-        SUCCESS,
-        CLASS_NOT_FOUND,
-        MISSING_ANNOTATION,
-        INVALID_PLUGIN_TYPE,
-        IO_ERROR
     }
 
 

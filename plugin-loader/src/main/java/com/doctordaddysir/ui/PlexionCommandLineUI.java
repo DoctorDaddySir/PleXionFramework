@@ -3,6 +3,7 @@ package com.doctordaddysir.ui;
 
 import com.doctordaddysir.annotations.*;
 import com.doctordaddysir.annotations.handlers.BeanCollector;
+import com.doctordaddysir.exceptions.DepndencyInjectionException;
 import com.doctordaddysir.exceptions.InvalidBeanException;
 import com.doctordaddysir.exceptions.InvalidFieldExcepton;
 import com.doctordaddysir.plugins.Plugin;
@@ -26,14 +27,12 @@ import static java.util.Objects.nonNull;
 @Bean
 @NoArgsConstructor
 public class PlexionCommandLineUI extends PlexionUI {
-    private Scanner scanner = new Scanner(System.in);
-    private Boolean isDebugMode = false;
-    private List<Class<?>> plugins = new ArrayList<>();
     private final Map<String, Plugin> instantiatedPlugins = new HashMap<>();
     private final Map<String, ClassLoader> classLoaders = new HashMap<>();
     private final Map<String, Plugin> proxies = new HashMap<>();
-
-
+    private Scanner scanner = new Scanner(System.in);
+    private Boolean isDebugMode = false;
+    private List<Class<?>> plugins = new ArrayList<>();
     @Inject
     private PluginLoader loader;
     @Inject
@@ -70,14 +69,19 @@ public class PlexionCommandLineUI extends PlexionUI {
 
     @Override
     public void start(Boolean debugMode, PluginLoader loader) {
-        startUI();
+        try {
+            startUI();
+        } catch (DepndencyInjectionException e) {
+            log.error("Error starting UI: {} {}", e.getReflectionDIError(),
+                    e.getMessage());
+        }
     }
 
-    public void startUI() {
+    public void startUI() throws DepndencyInjectionException {
         startLoop();
     }
 
-    private void startLoop() {
+    private void startLoop() throws DepndencyInjectionException {
         printHeader();
         System.out.println("Press enter to continue...");
         scanner.nextLine();
@@ -90,7 +94,7 @@ public class PlexionCommandLineUI extends PlexionUI {
         System.out.println("=======================");
     }
 
-    private void startMainLoop() {
+    private void startMainLoop() throws DepndencyInjectionException {
         int choice = -1;
         while (choice != 0) {
             printHeader();
@@ -104,7 +108,7 @@ public class PlexionCommandLineUI extends PlexionUI {
         loader.destroyPlugins(instantiatedPlugins, classLoaders, proxies);
     }
 
-    private void processCommandChoice(int choice) {
+    private void processCommandChoice(int choice) throws DepndencyInjectionException {
         switch (choice) {
             case 1:
                 startPluginLoop();
@@ -125,7 +129,7 @@ public class PlexionCommandLineUI extends PlexionUI {
         }
     }
 
-    private void startInjectorLoop() {
+    private void startInjectorLoop() throws DepndencyInjectionException {
         int choice = -1;
         while (choice != 0) {
             printHeader();
@@ -142,7 +146,7 @@ public class PlexionCommandLineUI extends PlexionUI {
         }
     }
 
-    private int processInjectionChoice(int choice, Map<String, Class<?>> beans) {
+    private int processInjectionChoice(int choice, Map<String, Class<?>> beans) throws DepndencyInjectionException {
         if (choice == 0) {
             return choice;
         }
@@ -154,7 +158,7 @@ public class PlexionCommandLineUI extends PlexionUI {
 
     }
 
-    private void startParameterLoop(Class<?> bean) {
+    private void startParameterLoop(Class<?> bean) throws DepndencyInjectionException {
         try {
 
             Object instance = beanCollector.resolve(bean);
@@ -175,7 +179,7 @@ public class PlexionCommandLineUI extends PlexionUI {
         } catch (NoSuchFieldException e) {
             log.error("No suitable field found for bean: {}", e.getMessage());
         } catch (InvalidFieldExcepton e) {
-            log.error("Invalid field: {}", e.getMessage());
+            log.error("Invalid field: {} for Class: {}", e.getMessage());
         }
     }
 
@@ -233,7 +237,7 @@ public class PlexionCommandLineUI extends PlexionUI {
                 System.out.println("Input cannot be empty. Try again.");
                 startLoop();
             }
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException | DepndencyInjectionException e) {
             System.err.println("Invalid input. Please enter a number.");
         }
         if (choice < 1 || choice > plugins.size()) {
@@ -284,6 +288,7 @@ public class PlexionCommandLineUI extends PlexionUI {
             System.out.println();
         }
     }
+
     @Override
     public void out(String message) {
         //not implemented in CLI

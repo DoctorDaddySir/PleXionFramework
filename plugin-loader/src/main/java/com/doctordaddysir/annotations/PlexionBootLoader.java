@@ -34,7 +34,7 @@ public class PlexionBootLoader {
 
     public void boot(Boolean isDebug) {
         Logger logger = (Logger) log;
-        if(isDebug){
+        if (isDebug) {
             logger.setLevel(ch.qos.logback.classic.Level.DEBUG);
             log.debug("Debug mode enabled");
         } else {
@@ -42,21 +42,25 @@ public class PlexionBootLoader {
         }
         loader.load(isDebug);
     }
+
     private void addInstance(Object instance) {
-        if(instances.contains(instance)){
+        if (instances.contains(instance)) {
             return;
         }
         instances.add(instance);
     }
+
     private void addLoadedClass(Class<?> clazz) {
-        if(loadedClasses.contains(clazz)){
+        if (loadedClasses.contains(clazz)) {
             return;
         }
         loadedClasses.add(clazz);
     }
+
     private void removeInstance(Object instance) {
         instances.remove(instance);
     }
+
     private void removeLoadedClass(Class<?> clazz) {
         loadedClasses.remove(clazz);
     }

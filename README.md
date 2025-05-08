@@ -1,7 +1,8 @@
 # 🧩 Java Plugin Framework
 
 A lightweight, modular plugins execution framework built using Java Reflection.  
-This system supports dynamic class loading, annotation-based metadata, and runtime plugins discovery from a designated directory.
+This system supports dynamic class loading, annotation-based metadata, and runtime plugins discovery from a designated
+directory.
 
 ---
 
@@ -110,6 +111,6 @@ If you'd like to contribute:
 
 ## 📬 Contact
 
-Maintained by Trent Shelton 
+Maintained by Trent Shelton
 Email: `p3rb34r@gmail.com`  
 GitHub: [https://github.com/yourusername/plugin-framework](https://github.com/yourusername/plugin-framework)

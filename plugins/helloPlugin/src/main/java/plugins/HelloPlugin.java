@@ -7,7 +7,8 @@ import com.doctordaddysir.annotations.OnLoad;
 import com.doctordaddysir.annotations.PluginInfo;
 import com.doctordaddysir.plugins.Plugin;
 
-@PluginInfo(name = "HelloPlugin", description = "A simple plugin that prints a hello message.")
+@PluginInfo(name = "HelloPlugin", description = "A simple plugin that prints a hello " +
+        "message.")
 public class HelloPlugin implements Plugin {
     @Override
     public void execute() {

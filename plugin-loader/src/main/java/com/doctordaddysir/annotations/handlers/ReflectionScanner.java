@@ -7,7 +7,9 @@ import java.util.Set;
 
 public interface ReflectionScanner {
     Set<Field> findTargetsByAnnotation(Class<? extends Annotation> annotation) throws IOException, ClassNotFoundException;
+
     void findTargetsBySuperClass(Class<?> superClass);
+
     void findTargetsByInterface(Class<?> interfaceClass);
 
     void execute() throws IOException, ClassNotFoundException;

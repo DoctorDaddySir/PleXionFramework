@@ -1,16 +1,20 @@
 package com.doctordaddysir.exceptions;
 
-import com.doctordaddysir.utils.FieldUtils;
+import com.doctordaddysir.utils.ReflectionUtils;
+
+import java.lang.reflect.Field;
 
 public class InvalidFieldExcepton extends Exception {
-    private FieldUtils.FieldError fieldError;
+    private ReflectionUtils.ReflectionFieldError reflectionFieldError;
+    private Field field;
 
-    public InvalidFieldExcepton(FieldUtils.FieldError fieldError) {
-        this.fieldError = fieldError;
+    public InvalidFieldExcepton(ReflectionUtils.ReflectionFieldError reflectionFieldError, Field field) {
+        this.reflectionFieldError = reflectionFieldError;
+        this.field = field;
     }
 
     @Override
     public String getMessage() {
-        return fieldError.name();
+        return reflectionFieldError.name();
     }
 }

@@ -9,7 +9,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface PluginInfo {
     String name();
+
     String version() default "1.0";
+
     String author() default "Trent Shelton";
+
     String description() default "No description provided.";
 }

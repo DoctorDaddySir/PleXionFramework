@@ -1,8 +1,8 @@
 package com.doctordaddysir.utils.classScanner;
 
 
-import com.doctordaddysir.plugins.loaders.PluginClassLoader;
 import com.doctordaddysir.plugins.Plugin;
+import com.doctordaddysir.plugins.loaders.PluginClassLoader;
 import com.doctordaddysir.utils.classScanner.filters.ClassFilter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,24 +23,24 @@ public class FilteredClassScanner {
         List<Class<?>> matchedClasses = new ArrayList<>();
         try (PluginClassLoader loader =
                      new PluginClassLoader(new URL[]{jarFile.toURI().toURL()},
-                             Plugin.class.getClassLoader())){
-try(JarFile jarfile = new JarFile(jarFile)) {
-    Enumeration<JarEntry> entries = jarfile.entries();
+                             Plugin.class.getClassLoader())) {
+            try (JarFile jarfile = new JarFile(jarFile)) {
+                Enumeration<JarEntry> entries = jarfile.entries();
 
 
-    while (entries.hasMoreElements()) {
-        JarEntry entry = entries.nextElement();
-        String className = convertToClassName(entry);
-        boolean isClassFile = isClassFile(entry);
-        boolean isDirectory = entry.isDirectory();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    String className = convertToClassName(entry);
+                    boolean isClassFile = isClassFile(entry);
+                    boolean isDirectory = entry.isDirectory();
 
-        if (isClassFile && !isDirectory && filter.accept(className, loader)) {
-            matchedClasses.add(loader.loadClass(className));
-        }
-    }
-} catch (ClassNotFoundException e) {
-    log.debug("Class not found: {}", e.getMessage());
-}
+                    if (isClassFile && !isDirectory && filter.accept(className, loader)) {
+                        matchedClasses.add(loader.loadClass(className));
+                    }
+                }
+            } catch (ClassNotFoundException e) {
+                log.debug("Class not found: {}", e.getMessage());
+            }
 
         } catch (IOException e) {
             log.error("Error while scanning jar file: {} : {}", jarFile, e.getMessage());

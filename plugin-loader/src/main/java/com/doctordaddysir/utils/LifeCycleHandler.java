@@ -3,6 +3,7 @@ package com.doctordaddysir.utils;
 import com.doctordaddysir.annotations.OnDestroy;
 import com.doctordaddysir.annotations.OnError;
 import com.doctordaddysir.annotations.OnLoad;
+import com.doctordaddysir.cache.ReflectionCache;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
@@ -16,29 +17,30 @@ public class LifeCycleHandler {
         log.debug("Invoking @OnLoad on plugin: {}", plugin.getClass().getName());
         invokeNoArgAnnotatedMethod(plugin, OnLoad.class);
     }
+
     public static void invokeDestroy(Object plugin) {
         log.debug("Invoking @OnDestroy on plugin: {}", plugin.getClass().getName());
         invokeNoArgAnnotatedMethod(plugin, OnDestroy.class);
     }
-    public static void invokeError(Object plugin, Throwable t){
+
+    public static void invokeError(Object plugin, Throwable t) {
         log.debug("Invoking @OnError on plugin: {}", plugin.getClass().getName());
 
         plugin = stripProxy(plugin);
 
-        for (Method method : plugin.getClass().getDeclaredMethods()) {
+        for (Method method : ReflectionCache.getMethods(plugin.getClass())) {
             if (method.isAnnotationPresent(OnError.class) &&
                     method.getParameterCount() == 1 &&
                     method.getParameterTypes()[0].equals(Throwable.class)) {
 
                 try {
-                    method.setAccessible(true);
                     method.invoke(plugin, t);
                 } catch (Exception e) {
                     log.error("Failed to invoke @OnError: {}", e.getMessage());
                 }
             }
         }
-        
+
     }
 
 

@@ -9,7 +9,7 @@ import static com.doctordaddysir.annotations.handlers.InjectionUtils.getPrimitiv
 import static java.util.Objects.nonNull;
 
 @NoArgsConstructor
-public class UnsafeAllocator {
+public class ResolvingBeanInstanceGenerator {
     public static Object createInstance(Class<?> clazz, Class<?>[] types,
                                         Object[] args) throws NoSuchMethodException,
             InvocationTargetException, InstantiationException, IllegalAccessException {

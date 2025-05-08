@@ -63,15 +63,17 @@ public class BeanCollector {
             InstantiationException, IllegalAccessException, InvalidBeanException,
             IOException, ClassNotFoundException, NoSuchMethodException,
             NoSuchFieldException, InvalidFieldExcepton {
-        if (ReflectionUtils.isAbstract(clazz)) {
-            clazz = ReflectionUtils.findInjectableClassforAbstractOrInterfaceClass(clazz);
-        }
+
+        clazz = updateClassIfAbstractOrInterface(clazz);
+
         ResolvingBean breakingCondition = checkForBreakingConditionInResolve(clazz);
+
         if (nonNull(breakingCondition)) {
             return breakingCondition.getResolvingInstance();
         }
         ResolvingBean resolvingBean;
         Object[] args;
+        
         if (isBeanResolving(clazz)) {
             return getResolvingBean(clazz).getResolvingInstance();
         } else {
@@ -83,25 +85,45 @@ public class BeanCollector {
 
         for (int i = 0; i < resolvingBean.getConstructor().getParameterTypes().length; i++) {
             Class<?> paramType = resolvingBean.getConstructor().getParameterTypes()[i];
-            Object param = resolve(paramType);
-            resolvingBean.getArgs()[i] = param;
-            resolvingBean.setArgs(args);
+            resolveParamAndUpdateResolvingBean(paramType, resolvingBean, i, args);
         }
 
+        Object instance = generateInstanceAndInjectFields(resolvingBean, args);
+
+        stopResolutionAndAddBeanInstanceToInstantiatedBeans(resolvingBean, instance);
+
+        return instance;
+    }
+
+    private void stopResolutionAndAddBeanInstanceToInstantiatedBeans(ResolvingBean resolvingBean, Object instance) {
+        stopBeanResolving(resolvingBean.getType());
+        addBeanInstance(resolvingBean.getType().getCanonicalName(), instance);
+    }
+
+    private Object generateInstanceAndInjectFields(ResolvingBean resolvingBean, Object[] args) throws InvalidBeanException, IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, NoSuchFieldException, InvalidFieldExcepton {
         resolvingBean.updateArgsAndGenerateNewResolvingInstance(args);
         Object instance = resolvingBean.invoke();
         instance = InjectionUtils.injectFields(instance, this);
-
-        stopBeanResolving(resolvingBean.getType());
-        addBeanInstance(resolvingBean.getType().getCanonicalName(), instance);
-
         return instance;
+    }
+
+    private void resolveParamAndUpdateResolvingBean(Class<?> paramType, ResolvingBean resolvingBean, int i, Object[] args) throws InvocationTargetException, InstantiationException, IllegalAccessException, InvalidBeanException, IOException, ClassNotFoundException, NoSuchMethodException, NoSuchFieldException, InvalidFieldExcepton {
+        Object param = resolve(paramType);
+        resolvingBean.getArgs()[i] = param;
+        resolvingBean.setArgs(args);
+    }
+
+    private static Class<?> updateClassIfAbstractOrInterface(Class<?> clazz) throws IOException, ClassNotFoundException {
+        if (ReflectionUtils.isAbstract(clazz)) {
+            clazz = ReflectionUtils.findInjectableClassforAbstractOrInterfaceClass(clazz);
+        }
+        return clazz;
     }
 
     private ResolvingBean createNewResolvingBean(Class<?> clazz) throws InvalidBeanException, IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         Constructor<?> constructor = getConstructorForInjection(clazz);
         Object[] args = new Object[constructor.getParameterTypes().length];
-        Object placeholder = UnsafeAllocator.createInstance(clazz,
+        Object placeholder = ResolvingBeanInstanceGenerator.createInstance(clazz,
                 constructor.getParameterTypes(), args);
         clazz = constructor.getDeclaringClass();
 
@@ -120,7 +142,7 @@ public class BeanCollector {
 
     private ResolvingBean updateResolvingBean(ResolvingBean bean, Object[] args) throws InvalidBeanException, IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         bean.setArgs(args);
-        bean.setResolvingInstance(UnsafeAllocator.updateResolvingBeanInstance(bean));
+        bean.setResolvingInstance(ResolvingBeanInstanceGenerator.updateResolvingBeanInstance(bean));
         return bean;
     }
 

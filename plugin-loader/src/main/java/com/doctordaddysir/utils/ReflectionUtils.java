@@ -2,7 +2,6 @@ package com.doctordaddysir.utils;
 
 
 import com.doctordaddysir.annotations.Bean;
-import com.doctordaddysir.annotations.Injectable;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -10,8 +9,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class ReflectionUtils {
@@ -123,16 +120,21 @@ public class ReflectionUtils {
     }
 
     private static Class<?> findConcreteClassForInjection(Field field) throws IOException, ClassNotFoundException {
-        Class<?> clazz = field.getType();
-        if (clazz.isInterface()) {
-            clazz = findImplementation(clazz);
+        return findInjectableClassforAbstractOrInterfaceClass(field.getType());
+
+    }
+
+    public static Class<?> findInjectableClassforAbstractOrInterfaceClass(Class<?> clazz) throws IOException, ClassNotFoundException {
+        Class<?> resultClass = null;
+        if (clazz.isPrimitive()) {
+            return clazz;
         }
-        if (clazz == null) {
-            return null;
+        if (clazz.isInterface()) {
+            resultClass = findImplementation(clazz);
         }
         if (isAbstract(clazz)) {
             List<Class<?>> collect = AnnotationScanner.findClassesWithAnnotation(Bean.class, "com.doctordaddysir").stream()
-                    .filter(c -> field.getType().isAssignableFrom(c))
+                    .filter(clazz::isAssignableFrom)
                     .filter(c -> !Modifier.isAbstract(c.getModifiers())).toList();
             return collect.getFirst();
         }

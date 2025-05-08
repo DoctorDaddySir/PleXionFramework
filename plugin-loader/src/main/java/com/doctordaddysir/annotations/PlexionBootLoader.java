@@ -2,14 +2,10 @@ package com.doctordaddysir.annotations;
 
 import ch.qos.logback.classic.Logger;
 import com.doctordaddysir.annotations.handlers.BeanCollector;
-import com.doctordaddysir.exceptions.InvalidBeanException;
 import com.doctordaddysir.plugins.loaders.PluginLoader;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,18 +15,22 @@ import java.util.List;
 public class PlexionBootLoader {
     private final List<Object> instances = new ArrayList<>();
     private final List<Class<?>> loadedClasses = new ArrayList<>();
-    private final BeanCollector beanCollector = new BeanCollector();
+    @Inject
+    private final BeanCollector beanCollector;
     @Inject
     private final PluginLoader loader;
 
-    @Injectable
-    public PlexionBootLoader(@Inject PluginLoader loader) {
-        this.loader = loader;
+    public PlexionBootLoader() {
+        this(null, null);
     }
 
-    public PlexionBootLoader() {
-        this.loader = null;
+    @Injectable
+    public PlexionBootLoader(@Inject PluginLoader loader,
+                             @Inject BeanCollector beanCollector) {
+        this.loader = loader;
+        this.beanCollector = beanCollector;
     }
+
 
     public void boot(Boolean isDebug) {
         Logger logger = (Logger) log;
@@ -40,9 +40,7 @@ public class PlexionBootLoader {
         } else {
             logger.setLevel(ch.qos.logback.classic.Level.INFO);
         }
-        beanCollector.collectBeans();
-        this.loader.setBootLoader(this).load(isDebug);
-
+        loader.load(isDebug);
     }
     private void addInstance(Object instance) {
         if(instances.contains(instance)){

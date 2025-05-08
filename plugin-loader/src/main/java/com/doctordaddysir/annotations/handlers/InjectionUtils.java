@@ -17,32 +17,12 @@ import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import static com.doctordaddysir.utils.ReflectionUtils.isAbstract;
 
 @Slf4j
 public class InjectionUtils {
-
-
-    public static Object[] resolveConstructorParameters(Constructor<?> constructor, BeanCollector collector) throws InvalidBeanException, InvocationTargetException, IllegalAccessException, InstantiationException, NoSuchMethodException {
-            Parameter[] params = constructor.getParameters();
-            Object[] resolved = new Object[params.length];
-
-            for (int i = 0; i < params.length; i++) {
-                Class<?> type = params[i].getType();
-                Inject injectAnnotation = params[i].getAnnotation(Inject.class);
-
-                if (type.isPrimitive()) {
-                    resolved[i] = getPrimitiveParameter(type);
-                } else if (injectAnnotation != null && collector.containsBeanInstance(type)) {
-                    resolved[i] = collector.getOrCreateBeanInstance(type);
-                } else {
-                    // Fallback: try no-arg constructor
-                    resolved[i] = type.getDeclaredConstructor().newInstance();
-                }
-            }
-
-            return resolved;
-        }
-
 
     @Getter
     @Setter
@@ -52,18 +32,22 @@ public class InjectionUtils {
         private Constructor<?> constructor;
         private Object[] parameters;
         private Class<?>[] parameterTypes;
-        public Object invoke() throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        private BeanCollector beanCollector;
+
+        public Object invoke() throws InvocationTargetException, InstantiationException
+                , IllegalAccessException, InvalidBeanException {
+            constructor.setAccessible(true);
             return constructor.newInstance(parameters);
         }
     }
 
     private static final Map<Class<?>, Object> defaultValues = Map.of(
-            int.class, 1,
-            boolean.class, true,
+            int.class, 0,
+            boolean.class, false,
             double.class, 0.0,
             long.class, 0L,
             float.class, 0f,
-            short.class, (short) 0,
+            short.class, 0,
             byte.class, (byte) 0,
             char.class, '\0'
     );
@@ -87,10 +71,10 @@ public class InjectionUtils {
         FieldUtils.injectField(instance,field,injectionValue);
     }
 
-    public static void injectFields(Object instance, BeanCollector beanCollector) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, IOException, NoSuchFieldException, ClassNotFoundException, InvalidFieldExcepton, InvalidBeanException {
+    public static Object injectFields(Object instance, BeanCollector beanCollector) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, IOException, NoSuchFieldException, ClassNotFoundException, InvalidFieldExcepton, InvalidBeanException {
         if (instance == null) {
             log.debug("Instance is null. Unable to inject");
-            return;
+            return null;
         }
         for (Field field : instance.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(Inject.class)) {
@@ -99,12 +83,20 @@ public class InjectionUtils {
                         beanCollector);
             }
         }
+        return instance;
     }
 
-    public static ConstructorInjector getConstructorInjector(Class<?> clazz) throws InvalidBeanException {
+    public static Constructor<?> getConstructorForInjection(Class<?> clazz) throws InvalidBeanException, IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (clazz == null) {
-            throw new InvalidBeanException("Instance is null");
+            throw new InvalidBeanException("Class is null");
         }
+        if (clazz.isInterface()) {
+            clazz = (Class<?>) Objects.requireNonNull(ReflectionUtils.findImplementation(clazz)).getDeclaredConstructor().newInstance();
+        }
+        if (isAbstract(clazz)) {
+            clazz = ReflectionUtils.findInjectableClassforAbstractOrInterfaceClass(clazz);
+        }
+
 
         List<Constructor<?>> injectableConstructors = getInjectableConstructors(clazz);
         if (injectableConstructors.isEmpty()) {
@@ -114,23 +106,16 @@ public class InjectionUtils {
             throw new InvalidBeanException("Multiple injectable constructors found");
         }
 
-        Constructor<?> injectableConstructor = injectableConstructors.getFirst();
-        Class<?>[] parameterTypes = injectableConstructor.getParameterTypes();
 
-
-        return ConstructorInjector.builder()
-                .parameters(new Object[parameterTypes.length]) // placeholder
-                .parameterTypes(parameterTypes)
-                .constructor(injectableConstructor)
-                .build();
+        return injectableConstructors.getFirst();
     }
 
-    public static void injectConstructor(ConstructorInjector injector, Object[] parameters, BeanCollector  beanCollector) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        if(beanCollector.containsBeanInstance(injector.getConstructor().getDeclaringClass())){
-            return;
+    public static Object injectConstructor(Class<?> clazz, BeanCollector beanCollector) throws InvocationTargetException, InstantiationException, IllegalAccessException, InvalidBeanException, IOException, ClassNotFoundException, NoSuchMethodException {
+        if (beanCollector.containsBeanInstance(clazz)) {
+            return beanCollector.getBeanInstance(clazz.getCanonicalName());
         };
-        injector.setParameters(parameters);
-        injector.invoke();
+        ;
+        return beanCollector.getOrCreateBeanInstance(clazz);
     }
 
     private static void injectMethod(Object instance, BeanCollector beanCollector) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, IOException, NoSuchFieldException, ClassNotFoundException, InvalidFieldExcepton, InvalidBeanException {
@@ -145,15 +130,22 @@ public class InjectionUtils {
         return false;
     }
 
-    public static List<Constructor<?>> getInjectableConstructors(Class<?> clazz) {
-        List<Constructor<?>> injectableConstructors = new ArrayList<>();
 
+    public static List<Constructor<?>> getInjectableConstructors(Class<?> clazz) throws NoSuchMethodException {
+        List<Constructor<?>> injectableConstructors = new ArrayList<>();
+        Boolean hasNoArgConstructor = false;
         for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
+            if (constructor.getParameterCount() == 0) {
+                hasNoArgConstructor = true;
+            }
             if (constructor.isAnnotationPresent(Injectable.class)) {
                 if (hasInjectableParameters(constructor)) {
                     injectableConstructors.add(constructor);
                 }
             }
+        }
+        if (injectableConstructors.isEmpty() && hasNoArgConstructor) {
+            return List.of(clazz.getDeclaredConstructor());
         }
         return injectableConstructors;
     }
@@ -168,7 +160,7 @@ public class InjectionUtils {
     }
 
     public static boolean hasInjectableMethods(Class<?> clazz) {
-        for (java.lang.reflect.Method method : clazz.getDeclaredMethods()) {
+        for (Method method : clazz.getDeclaredMethods()) {
             if (method.isAnnotationPresent(Injectable.class)) {
                 if (hasInjectableParameters(method)) {
                     return true;

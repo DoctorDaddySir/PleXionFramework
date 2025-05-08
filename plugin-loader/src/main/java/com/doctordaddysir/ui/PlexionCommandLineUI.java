@@ -1,10 +1,10 @@
 package com.doctordaddysir.ui;
 
 
-import com.doctordaddysir.annotations.AnnotationUtils;
-import com.doctordaddysir.annotations.Bean;
-import com.doctordaddysir.annotations.handlers.InjectionUtils;
+import com.doctordaddysir.annotations.*;
+import com.doctordaddysir.annotations.handlers.BeanCollector;
 import com.doctordaddysir.exceptions.InvalidBeanException;
+import com.doctordaddysir.exceptions.InvalidFieldExcepton;
 import com.doctordaddysir.plugins.Plugin;
 import com.doctordaddysir.plugins.loaders.PluginLoader;
 import com.doctordaddysir.proxies.PluginProxyFactory;
@@ -12,10 +12,11 @@ import com.doctordaddysir.utils.LifeCycleHandler;
 import com.doctordaddysir.utils.PluginProxyUtils;
 import com.doctordaddysir.utils.ReflectionUtils;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 import static java.util.Objects.nonNull;
@@ -23,6 +24,7 @@ import static java.util.Objects.nonNull;
 @Getter
 @Slf4j
 @Bean
+@NoArgsConstructor
 public class PlexionCommandLineUI extends PlexionUI {
     private Scanner scanner = new Scanner(System.in);
     private Boolean isDebugMode = false;
@@ -31,10 +33,33 @@ public class PlexionCommandLineUI extends PlexionUI {
     private final Map<String, ClassLoader> classLoaders = new HashMap<>();
     private final Map<String, Plugin> proxies = new HashMap<>();
 
-    public PlexionCommandLineUI() {
+
+    @Inject
+    private PluginLoader loader;
+    @Inject
+    private BeanCollector beanCollector;
+    @Inject
+    private PlexionBootLoader bootLoader;
+
+    @Injectable
+    public PlexionCommandLineUI(@Inject PlexionBootLoader bootLoader,
+                                @Inject BeanCollector beanCollector,
+                                @Inject PluginLoader loader) {
         super();
+        this.bootLoader = bootLoader;
+        this.beanCollector = beanCollector;
+        this.loader = loader;
     }
 
+
+    public PlexionCommandLineUI(Scanner scanner, Boolean isDebugMode,
+                                @Inject PluginLoader loader,
+                                @Inject BeanCollector beanCollector,
+                                @Inject PlexionBootLoader bootLoader) {
+        this.scanner = scanner;
+        this.isDebugMode = isDebugMode;
+        this.plugins = plugins;
+    }
 
     @Override
     public void setDebugMode(Boolean debugMode) {
@@ -45,17 +70,18 @@ public class PlexionCommandLineUI extends PlexionUI {
 
     @Override
     public void start(Boolean debugMode, PluginLoader loader) {
-        startUI(loader);
-    }
-    public void startUI(PluginLoader loader) {
-        startLoop(loader);
+        startUI();
     }
 
-    private void startLoop(PluginLoader loader) {
+    public void startUI() {
+        startLoop();
+    }
+
+    private void startLoop() {
         printHeader();
         System.out.println("Press enter to continue...");
         scanner.nextLine();
-        startMainLoop(loader);
+        startMainLoop();
     }
 
     private void printHeader() {
@@ -64,13 +90,13 @@ public class PlexionCommandLineUI extends PlexionUI {
         System.out.println("=======================");
     }
 
-    private void startMainLoop(PluginLoader loader) {
+    private void startMainLoop() {
         int choice = -1;
         while (choice != 0) {
             printHeader();
             displayCommandOptions();
             choice = getCommandChoice(loader);
-            processCommandChoice(choice, loader);
+            processCommandChoice(choice);
         }
 
         scanner.close();
@@ -78,10 +104,10 @@ public class PlexionCommandLineUI extends PlexionUI {
         loader.destroyPlugins(instantiatedPlugins, classLoaders, proxies);
     }
 
-    private void processCommandChoice(int choice, PluginLoader loader) {
+    private void processCommandChoice(int choice) {
         switch (choice) {
             case 1:
-                startPluginLoop(loader);
+                startPluginLoop();
                 break;
             case 2:
                 System.out.println("Destroying plugins Command not implemented yet");
@@ -94,12 +120,12 @@ public class PlexionCommandLineUI extends PlexionUI {
                 scanner.nextLine();
                 break;
             case 4:
-                startInjectorLoop(loader);
+                startInjectorLoop();
                 break;
         }
     }
 
-    private void startInjectorLoop(PluginLoader loader) {
+    private void startInjectorLoop() {
         int choice = -1;
         while (choice != 0) {
             printHeader();
@@ -112,28 +138,26 @@ public class PlexionCommandLineUI extends PlexionUI {
                 log.error("Invalid input. Please enter a number.");
                 scanner.nextLine();
             }
-            choice = processInjectionChoice(choice, beans, loader);
+            choice = processInjectionChoice(choice, beans);
         }
     }
 
-    private int processInjectionChoice(int choice, Map<String, Class<?>> beans, PluginLoader loader) {
+    private int processInjectionChoice(int choice, Map<String, Class<?>> beans) {
         if (choice == 0) {
             return choice;
         }
         Class<?> bean = beans.values().stream().toList().get(choice - 1);
         if (nonNull(bean)) {
-            startParameterLoop(bean, loader);
+            startParameterLoop(bean);
         }
         return choice;
 
     }
 
-    private void startParameterLoop(Class<?> bean, PluginLoader loader) {
+    private void startParameterLoop(Class<?> bean) {
         try {
-            InjectionUtils.ConstructorInjector constructorInjector = InjectionUtils.getConstructorInjector(bean);
-            Object[] params = InjectionUtils.resolveConstructorParameters(constructorInjector.getConstructor(), loader.getBootLoader().getBeanCollector());
-            constructorInjector.setParameters(params);
-            Object instance = constructorInjector.invoke();
+
+            Object instance = beanCollector.resolve(bean);
             log.info("Created instance of bean: {}", bean.getName());
             log.info(instance.toString());
             scanner.nextLine();
@@ -144,6 +168,14 @@ public class PlexionCommandLineUI extends PlexionUI {
             log.error("Error instantiating bean: {}", e.getMessage());
         } catch (NoSuchMethodException e) {
             log.error("No suitable constructor found for bean: {}", e.getMessage());
+        } catch (IOException e) {
+            log.error("Error reading plugin info: {}", e.getMessage());
+        } catch (ClassNotFoundException e) {
+            log.error("Class not found: {}", e.getMessage());
+        } catch (NoSuchFieldException e) {
+            log.error("No suitable field found for bean: {}", e.getMessage());
+        } catch (InvalidFieldExcepton e) {
+            log.error("Invalid field: {}", e.getMessage());
         }
     }
 
@@ -182,16 +214,16 @@ public class PlexionCommandLineUI extends PlexionUI {
         System.out.println("Select a command (1-4) or 0 to quit:");
     }
 
-    private void startPluginLoop(PluginLoader loader) {
+    private void startPluginLoop() {
         int choice = -1;
         while (choice != 0) {
             printHeader();
             listPlugins();
-            choice = getPluginChoice(loader);
+            choice = getPluginChoice();
         }
     }
 
-    private int getPluginChoice(PluginLoader loader) {
+    private int getPluginChoice() {
 
         String input = scanner.nextLine().trim();
         int choice = -1;
@@ -199,7 +231,7 @@ public class PlexionCommandLineUI extends PlexionUI {
             choice = Integer.parseInt(input);
             if (input.isEmpty()) {
                 System.out.println("Input cannot be empty. Try again.");
-                startLoop(loader);
+                startLoop();
             }
         } catch (NumberFormatException e) {
             System.err.println("Invalid input. Please enter a number.");
@@ -222,7 +254,6 @@ public class PlexionCommandLineUI extends PlexionUI {
             InstantiationException, InvocationTargetException, NoSuchMethodException {
         Plugin plugin =
                 (Plugin) ReflectionUtils.newInstance(plugins.get(choice - 1), null);
-        ;
         Plugin proxy = null;
         if (isDebugMode) {
             proxy = PluginProxyFactory.createProxy(plugin);

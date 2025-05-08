@@ -3,6 +3,7 @@ package com.doctordaddysir.plugins.loaders;
 
 import com.doctordaddysir.annotations.Bean;
 import com.doctordaddysir.annotations.Inject;
+import com.doctordaddysir.annotations.Injectable;
 import com.doctordaddysir.annotations.PlexionBootLoader;
 import com.doctordaddysir.exceptions.InvalidPluginException;
 import com.doctordaddysir.plugins.Plugin;
@@ -40,6 +41,11 @@ public class PluginLoader {
     @Inject
     private PlexionBootLoader bootLoader;
 
+    @Injectable
+    public PluginLoader(@Inject PlexionUI ui, @Inject PlexionBootLoader bootLoader) {
+        this.ui = ui;
+        this.bootLoader = bootLoader;
+    }
 
     public void load(Boolean isDebug) {
         loadPluginsAndReportErrors(isDebug).start(isDebug, this);

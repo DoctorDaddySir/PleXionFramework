@@ -11,7 +11,7 @@
 
     <modules>
         <module>plexion-base</module>
-        <module>plugins</module> <!-- includes hello/goodbye via its own pom.xml -->
+        <module>plexion-plugins</module>
     </modules>
 
     <properties>

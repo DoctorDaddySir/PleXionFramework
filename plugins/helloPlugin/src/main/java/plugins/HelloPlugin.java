@@ -1,11 +1,12 @@
 package plugins;
 
 
-import com.doctordaddysir.annotations.OnDestroy;
-import com.doctordaddysir.annotations.OnError;
-import com.doctordaddysir.annotations.OnLoad;
-import com.doctordaddysir.annotations.PluginInfo;
-import com.doctordaddysir.plugins.Plugin;
+
+import com.doctordaddysir.core.annotations.OnDestroy;
+import com.doctordaddysir.core.annotations.OnError;
+import com.doctordaddysir.core.annotations.OnLoad;
+import com.doctordaddysir.core.annotations.PluginInfo;
+import com.doctordaddysir.core.plugins.Plugin;
 
 @PluginInfo(name = "HelloPlugin", description = "A simple plugin that prints a hello " +
         "message.")

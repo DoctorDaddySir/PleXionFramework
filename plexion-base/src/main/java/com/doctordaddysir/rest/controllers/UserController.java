@@ -1,0 +1,20 @@
+package com.doctordaddysir.rest.controllers;
+
+import com.doctordaddysir.core.annotations.*;
+import com.doctordaddysir.core.model.ResponseEntity;
+import com.doctordaddysir.model.User;
+import com.doctordaddysir.services.UserService;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/users")
+@RequiredArgsConstructor
+public class UserController {
+    @Inject
+    private final UserService userService;
+
+    @Get("/{id}")
+    public ResponseEntity<User> getHealth(@PathVariable String id) {
+        return ResponseEntity.ok(new User());
+    }
+}

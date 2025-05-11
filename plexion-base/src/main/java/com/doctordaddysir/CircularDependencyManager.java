@@ -1,4 +1,4 @@
-package com.doctordaddysir.core.annotations.handlers;
+package com.doctordaddysir;
 
 import com.doctordaddysir.core.reflection.ResolvingBean;
 import lombok.NoArgsConstructor;

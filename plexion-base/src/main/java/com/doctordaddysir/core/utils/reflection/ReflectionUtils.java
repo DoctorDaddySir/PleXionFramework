@@ -1,7 +1,6 @@
 package com.doctordaddysir.core.utils.reflection;
 
 
-import com.doctordaddysir.core.annotations.Bean;
 import com.doctordaddysir.core.cache.ReflectionCache;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,7 +38,6 @@ public class ReflectionUtils {
         if (args == null) {
             return clazz.getDeclaredConstructor().newInstance(args);
         }
-        Object instance;
         final Constructor<?>[] constructor = {null};
         Arrays.stream(ReflectionCache.getConstructors(clazz))
                 .forEach(c -> {

@@ -1,4 +1,4 @@
-package com.doctordaddysir.core.annotations;
+package com.doctordaddysir.core.reflection.annotations;
 
 public class AnnotationUtils {
     public static String readPluginInfo(Class<?> clazz) {

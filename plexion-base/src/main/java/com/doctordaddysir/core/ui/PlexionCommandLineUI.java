@@ -2,17 +2,17 @@ package com.doctordaddysir.core.ui;
 
 
 import com.doctordaddysir.core.PlexionBootLoader;
-import com.doctordaddysir.core.annotations.AnnotationUtils;
-import com.doctordaddysir.core.annotations.Bean;
-import com.doctordaddysir.core.annotations.Inject;
-import com.doctordaddysir.core.annotations.Injectable;
-import com.doctordaddysir.core.annotations.handlers.BeanCollector;
+import com.doctordaddysir.core.reflection.annotations.AnnotationUtils;
+import com.doctordaddysir.core.reflection.annotations.Bean;
+import com.doctordaddysir.core.reflection.annotations.Inject;
+import com.doctordaddysir.core.reflection.annotations.Injectable;
+import com.doctordaddysir.BeanCollector;
 import com.doctordaddysir.core.exceptions.DepndencyInjectionException;
 import com.doctordaddysir.core.exceptions.InvalidBeanException;
 import com.doctordaddysir.core.exceptions.InvalidFieldExcepton;
 import com.doctordaddysir.core.plugins.Plugin;
 import com.doctordaddysir.core.plugins.loaders.PluginLoader;
-import com.doctordaddysir.core.utils.LifeCycleHandler;
+import com.doctordaddysir.core.utils.LifeCycleManager;
 import com.doctordaddysir.core.utils.PleXionProxyBuilder;
 import com.doctordaddysir.core.utils.ProxyUtils;
 import com.doctordaddysir.core.utils.reflection.ReflectionUtils;
@@ -93,7 +93,6 @@ public class PlexionCommandLineUI extends PlexionUI {
     }
 
     private void printHeader() {
-        clearConsole();
         System.out.println("Plexion Framework CLI");
         System.out.println("=======================");
     }
@@ -275,8 +274,8 @@ public class PlexionCommandLineUI extends PlexionUI {
         } else {
             instantiatedPlugins.put(plugin.getClass().getName(), plugin);
         }
-        LifeCycleHandler.invokeLoad(plugin);
-        ProxyUtils.executePluginOrProxy(plugin, proxy);
+        LifeCycleManager.invokeLoad(plugin);
+        ProxyUtils.executeNoArgMethodOnInstanceOrProxy(plugin, plugin.getClass().getMethod("execute"));
         System.out.println("Plugin executed successfully. Press enter to " +
                 "continue...");
         scanner.nextLine();

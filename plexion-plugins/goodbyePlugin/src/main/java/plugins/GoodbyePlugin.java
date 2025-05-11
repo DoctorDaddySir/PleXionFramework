@@ -1,10 +1,10 @@
 package plugins;
 
 
-import com.doctordaddysir.core.annotations.OnDestroy;
-import com.doctordaddysir.core.annotations.OnError;
-import com.doctordaddysir.core.annotations.OnLoad;
-import com.doctordaddysir.core.annotations.PluginInfo;
+import com.doctordaddysir.core.reflection.annotations.OnDestroy;
+import com.doctordaddysir.core.reflection.annotations.OnError;
+import com.doctordaddysir.core.reflection.annotations.OnLoad;
+import com.doctordaddysir.core.reflection.annotations.PluginInfo;
 import com.doctordaddysir.core.plugins.Plugin;
 
 @PluginInfo(name = "GoodbyePlugin", description = "A simple plugin that says goodbye")

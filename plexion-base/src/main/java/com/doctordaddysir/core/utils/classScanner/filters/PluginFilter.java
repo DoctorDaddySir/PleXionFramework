@@ -1,7 +1,7 @@
 package com.doctordaddysir.core.utils.classScanner.filters;
 
 
-import com.doctordaddysir.core.annotations.PluginInfo;
+import com.doctordaddysir.core.reflection.annotations.PluginInfo;
 import com.doctordaddysir.core.exceptions.InvalidPluginException;
 import com.doctordaddysir.core.plugins.Plugin;
 import com.doctordaddysir.core.plugins.loaders.PluginLoader;

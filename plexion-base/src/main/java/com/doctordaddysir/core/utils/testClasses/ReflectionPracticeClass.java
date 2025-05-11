@@ -1,8 +1,8 @@
 package com.doctordaddysir.core.utils.testClasses;
 
-import com.doctordaddysir.core.annotations.Bean;
-import com.doctordaddysir.core.annotations.Inject;
-import com.doctordaddysir.core.annotations.Injectable;
+import com.doctordaddysir.core.reflection.annotations.Bean;
+import com.doctordaddysir.core.reflection.annotations.Inject;
+import com.doctordaddysir.core.reflection.annotations.Injectable;
 import com.doctordaddysir.core.PlexionBootLoader;
 import com.doctordaddysir.core.plugins.loaders.PluginLoader;
 import com.doctordaddysir.core.ui.PlexionUI;

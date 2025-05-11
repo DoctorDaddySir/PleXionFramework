@@ -1,7 +1,7 @@
 package com.doctordaddysir.core.rest;
 
-import com.doctordaddysir.core.annotations.Bean;
-import com.doctordaddysir.core.annotations.Inject;
+import com.doctordaddysir.core.reflection.annotations.Bean;
+import com.doctordaddysir.core.reflection.annotations.Inject;
 import io.undertow.Undertow;
 import io.undertow.util.Headers;
 import lombok.NoArgsConstructor;

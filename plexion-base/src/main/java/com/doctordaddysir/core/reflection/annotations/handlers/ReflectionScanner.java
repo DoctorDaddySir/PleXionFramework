@@ -1,4 +1,4 @@
-package com.doctordaddysir.core.annotations.handlers;
+package com.doctordaddysir.core.reflection.annotations.handlers;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;

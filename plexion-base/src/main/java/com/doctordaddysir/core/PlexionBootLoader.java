@@ -1,16 +1,15 @@
 package com.doctordaddysir.core;
 
 import ch.qos.logback.classic.Logger;
-import com.doctordaddysir.core.annotations.Bean;
-import com.doctordaddysir.core.annotations.Inject;
-import com.doctordaddysir.core.annotations.Injectable;
-import com.doctordaddysir.core.annotations.handlers.BeanCollector;
+import com.doctordaddysir.core.reflection.annotations.Bean;
+import com.doctordaddysir.core.reflection.annotations.Inject;
+import com.doctordaddysir.core.reflection.annotations.Injectable;
+import com.doctordaddysir.BeanCollector;
 import com.doctordaddysir.core.plugins.loaders.PluginLoader;
 import com.doctordaddysir.core.rest.PLexionRestServer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;

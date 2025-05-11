@@ -1,4 +1,4 @@
-package com.doctordaddysir.core.annotations;
+package com.doctordaddysir.core.reflection.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

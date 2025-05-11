@@ -1,7 +1,6 @@
 package com.doctordaddysir.services;
 
-import com.doctordaddysir.core.annotations.Bean;
-import com.doctordaddysir.core.annotations.Service;
+import com.doctordaddysir.core.reflection.annotations.Bean;
 
 
 @Bean

@@ -1,8 +1,8 @@
 package com.doctordaddysir.core.utils.reflection;
 
-import com.doctordaddysir.core.annotations.Inject;
-import com.doctordaddysir.core.annotations.Injectable;
-import com.doctordaddysir.core.annotations.handlers.BeanCollector;
+import com.doctordaddysir.core.reflection.annotations.Inject;
+import com.doctordaddysir.core.reflection.annotations.Injectable;
+import com.doctordaddysir.BeanCollector;
 import com.doctordaddysir.core.cache.ReflectionCache;
 import com.doctordaddysir.core.exceptions.DepndencyInjectionException;
 import com.doctordaddysir.core.exceptions.InvalidBeanException;

@@ -1,14 +1,14 @@
 package com.doctordaddysir.core.plugins.loaders;
 
 
-import com.doctordaddysir.core.annotations.Bean;
-import com.doctordaddysir.core.annotations.Inject;
-import com.doctordaddysir.core.annotations.Injectable;
+import com.doctordaddysir.core.reflection.annotations.Bean;
+import com.doctordaddysir.core.reflection.annotations.Inject;
+import com.doctordaddysir.core.reflection.annotations.Injectable;
 import com.doctordaddysir.core.PlexionBootLoader;
 import com.doctordaddysir.core.exceptions.InvalidPluginException;
 import com.doctordaddysir.core.plugins.Plugin;
 import com.doctordaddysir.core.ui.PlexionUI;
-import com.doctordaddysir.core.utils.LifeCycleHandler;
+import com.doctordaddysir.core.utils.LifeCycleManager;
 import com.doctordaddysir.core.utils.classScanner.FilteredClassScanner;
 import com.doctordaddysir.core.utils.classScanner.filters.ClassFilter;
 import com.doctordaddysir.core.utils.classScanner.filters.PluginFilter;
@@ -121,7 +121,7 @@ public class PluginLoader {
                     , Plugin> proxies) {
         instantiatedPlugins.keySet().forEach(fqcn -> {
             Plugin plugin = instantiatedPlugins.get(fqcn);
-            LifeCycleHandler.invokeDestroy(plugin);
+            LifeCycleManager.invokeDestroy(plugin);
             instantiatedPlugins.put(fqcn, null);
             try {
                 ((URLClassLoader) classLoaders.get(fqcn)).close();

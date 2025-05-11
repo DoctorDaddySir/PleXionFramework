@@ -1,6 +1,6 @@
 package com.doctordaddysir.core.reflection;
 
-import com.doctordaddysir.core.annotations.handlers.BeanCollector;
+import com.doctordaddysir.BeanCollector;
 import com.doctordaddysir.core.exceptions.InvalidBeanException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

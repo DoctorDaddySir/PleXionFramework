@@ -1,6 +1,5 @@
 package com.doctordaddysir;
 
-import com.doctordaddysir.core.annotations.handlers.BeanCollector;
 import com.doctordaddysir.core.exceptions.DepndencyInjectionException;
 import com.doctordaddysir.core.exceptions.InvalidBeanException;
 import com.doctordaddysir.core.exceptions.InvalidFieldExcepton;

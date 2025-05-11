@@ -1,7 +1,7 @@
 package com.doctordaddysir.core.rest;
 
 import com.doctordaddysir.core.SystemInfo;
-import com.doctordaddysir.core.annotations.Bean;
+import com.doctordaddysir.core.reflection.annotations.Bean;
 import com.doctordaddysir.core.exceptions.RouteRegistryException;
 import com.doctordaddysir.core.utils.reflection.AnnotationScanner;
 import lombok.Getter;

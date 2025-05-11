@@ -134,10 +134,6 @@ public class PluginLoader {
         });
     }
 
-    public PluginLoader setBootLoader(PlexionBootLoader plexionBootLoader) {
-        return this;
-    }
-
     public enum PluginLoadResult {
         SUCCESS,
         CLASS_NOT_FOUND,

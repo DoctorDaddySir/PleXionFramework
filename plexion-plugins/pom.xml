@@ -16,7 +16,6 @@
     <modules>
         <module>helloPlugin</module>
         <module>goodbyePlugin</module>
-        <!-- Add more plugins as needed -->
     </modules>
 
 </project>

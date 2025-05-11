@@ -5,6 +5,7 @@ import com.doctordaddysir.core.PlexionBootLoader;
 import com.doctordaddysir.core.exceptions.DepndencyInjectionException;
 import com.doctordaddysir.core.exceptions.InvalidBeanException;
 import com.doctordaddysir.core.exceptions.InvalidFieldExcepton;
+import com.doctordaddysir.core.reflection.ResolvingBean;
 import com.doctordaddysir.core.utils.reflection.AnnotationScanner;
 import com.doctordaddysir.core.utils.reflection.InjectionUtils;
 import com.doctordaddysir.core.utils.reflection.ReflectionUtils;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 import static com.doctordaddysir.core.utils.reflection.InjectionUtils.getConstructorForInjection;
 import static com.doctordaddysir.core.utils.reflection.InjectionUtils.getPrimitiveParameter;
+import static com.doctordaddysir.core.utils.reflection.ReflectionUtils.updateClassIfAbstractOrInterface;
 import static java.util.Objects.nonNull;
 
 @Slf4j
@@ -30,12 +32,7 @@ public class BeanCollector {
     private final Map<String, Object> instantiatedBeans = new HashMap<>();
     private PlexionBootLoader bootLoader;
 
-    private static Class<?> updateClassIfAbstractOrInterface(Class<?> clazz) throws IOException, ClassNotFoundException {
-        if (ReflectionUtils.isAbstract(clazz)) {
-            clazz = ReflectionUtils.findInjectableClassforAbstractOrInterfaceClass(clazz);
-        }
-        return clazz;
-    }
+
 
     public void collectBeansAndStartPlexion(boolean isDebug) throws InvalidBeanException,
             InvocationTargetException, IllegalAccessException, InstantiationException,
@@ -75,11 +72,13 @@ public class BeanCollector {
 
         clazz = updateClassIfAbstractOrInterface(clazz);
 
-        ResolvingBean checkCurrentResolution = checkForBreakingConditionInResolve(clazz);
+        ResolvingBean checkCurrentResolution = checkCurrentResolutionStatus(clazz);
 
         if (nonNull(checkCurrentResolution)) {
             return checkCurrentResolution.getResolvingInstance();
         }
+
+
         ResolvingBean resolvingBean;
         Object[] args;
 
@@ -103,55 +102,7 @@ public class BeanCollector {
 
         return instance;
     }
-
-    private void stopResolutionAndAddBeanInstanceToInstantiatedBeans(ResolvingBean resolvingBean, Object instance) {
-        stopBeanResolving(resolvingBean.getType());
-        addBeanInstance(resolvingBean.getType().getCanonicalName(), instance);
-    }
-
-    private Object generateInstanceAndInjectFields(ResolvingBean resolvingBean,
-                                                   Object[] args) throws InvalidBeanException, IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, NoSuchFieldException, InvalidFieldExcepton, DepndencyInjectionException {
-        resolvingBean.updateArgsAndGenerateNewResolvingInstance(args);
-        Object instance = resolvingBean.invoke();
-        instance = InjectionUtils.injectFields(instance, this);
-        return instance;
-    }
-
-    private void resolveParamAndUpdateResolvingBean(Class<?> paramType,
-                                                    ResolvingBean resolvingBean, int i,
-                                                    Object[] args) throws InvocationTargetException, InstantiationException, IllegalAccessException, InvalidBeanException, IOException, ClassNotFoundException, NoSuchMethodException, NoSuchFieldException, InvalidFieldExcepton, DepndencyInjectionException {
-        Object param = resolve(paramType);
-        resolvingBean.getArgs()[i] = param;
-        resolvingBean.setArgs(args);
-    }
-
-    private ResolvingBean createNewResolvingBean(Class<?> clazz) throws InvalidBeanException, IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        Constructor<?> constructor = getConstructorForInjection(clazz);
-        Object[] args = new Object[constructor.getParameterTypes().length];
-        Object placeholder = ResolvingBeanInstanceGenerator.createInstance(clazz,
-                constructor.getParameterTypes(), args);
-        clazz = constructor.getDeclaringClass();
-
-        ResolvingBean resolvingBean = ResolvingBean.
-                builder()
-                .type(clazz)
-                .resolvingInstance(placeholder)
-                .isResolving(true)
-                .args(args)
-                .constructor(constructor)
-                .beanCollector(this)
-                .build();
-        resolvingBean.startResolving();
-        return resolvingBean;
-    }
-
-    private ResolvingBean updateResolvingBean(ResolvingBean bean, Object[] args) throws InvalidBeanException, IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        bean.setArgs(args);
-        bean.setResolvingInstance(ResolvingBeanInstanceGenerator.updateResolvingBeanInstance(bean));
-        return bean;
-    }
-
-    private ResolvingBean checkForBreakingConditionInResolve(Class<?> clazz) throws IOException, ClassNotFoundException {
+    private ResolvingBean checkCurrentResolutionStatus(Class<?> clazz) throws IOException, ClassNotFoundException {
         if (clazz.isPrimitive()) {
             Object primitiveParameter = getPrimitiveParameter(clazz);
             return ResolvingBean.builder()
@@ -170,6 +121,7 @@ public class BeanCollector {
         return null;
     }
 
+
     public boolean containsBeanInstance(String name) {
         return instantiatedBeans.containsKey(name);
     }
@@ -177,6 +129,54 @@ public class BeanCollector {
     public Boolean isBeanResolving(Class<?> clazz) {
         return resolvingBeans.containsKey(clazz);
     }
+    private ResolvingBean createNewResolvingBean(Class<?> clazz) throws InvalidBeanException, IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        Constructor<?> constructor = getConstructorForInjection(clazz);
+        Object[] args = new Object[constructor.getParameterTypes().length];
+        Object placeholder = CircularDependencyManager.createInstance(clazz,
+                constructor.getParameterTypes(), args);
+        clazz = constructor.getDeclaringClass();
+
+        ResolvingBean resolvingBean = ResolvingBean.
+                builder()
+                .type(clazz)
+                .resolvingInstance(placeholder)
+                .isResolving(true)
+                .args(args)
+                .constructor(constructor)
+                .beanCollector(this)
+                .build();
+        resolvingBean.startResolving();
+        return resolvingBean;
+    }
+
+
+    private void resolveParamAndUpdateResolvingBean(Class<?> paramType,
+                                                    ResolvingBean resolvingBean, int i,
+                                                    Object[] args) throws InvocationTargetException, InstantiationException, IllegalAccessException, InvalidBeanException, IOException, ClassNotFoundException, NoSuchMethodException, NoSuchFieldException, InvalidFieldExcepton, DepndencyInjectionException {
+        Object param = resolve(paramType);
+        resolvingBean.getArgs()[i] = param;
+        resolvingBean.setArgs(args);
+    }
+
+    private Object generateInstanceAndInjectFields(ResolvingBean resolvingBean,
+                                                   Object[] args) throws InvalidBeanException, IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, NoSuchFieldException, InvalidFieldExcepton, DepndencyInjectionException {
+        resolvingBean.updateArgsAndGenerateNewResolvingInstance(args);
+        Object instance = resolvingBean.invoke();
+        instance = InjectionUtils.injectFields(instance, this);
+        return instance;
+    }
+
+    private void stopResolutionAndAddBeanInstanceToInstantiatedBeans(ResolvingBean resolvingBean, Object instance) {
+        stopBeanResolving(resolvingBean.getType());
+        addBeanInstance(resolvingBean.getType().getCanonicalName(), instance);
+    }
+
+
+
+    public void stopBeanResolving(Class<?> clazz) {
+        setBeanResolving(clazz, null, false);
+    }
+
 
     public void setBeanResolving(Class<?> clazz, ResolvingBean resolvingBean,
                                  Boolean isResolving) {
@@ -187,18 +187,83 @@ public class BeanCollector {
         }
     }
 
-    public void stopBeanResolving(Class<?> clazz) {
-        setBeanResolving(clazz, null, false);
-    }
-
-
     public void addBeanInstance(String name, Object instance) {
         instantiatedBeans.put(name, instance);
 
     }
 
-    public void addBeanInstance(Class<?> clazz, Object instance) {
-        instantiatedBeans.put(clazz.getName(), instance);
+    public ResolvingBean updateResolvingBean(ResolvingBean bean, Object[] args) throws InvalidBeanException, IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        bean.setArgs(args);
+        bean.setResolvingInstance(CircularDependencyManager.updateResolvingBeanInstance(bean));
+        return bean;
+    }
+
+
+    public void addBean(Class<?> clazz) {
+        beans.put(clazz.getName(), clazz);
+    }
+
+
+    public int size() {
+        return beans.size();
+    }
+
+    public boolean isEmpty() {
+        return beans.isEmpty();
+    }
+
+
+    public Object getOrCreateBeanInstance(Class<?> clazz) throws
+            InvalidBeanException, InvocationTargetException, IllegalAccessException,
+            InstantiationException, NoSuchMethodException, RuntimeException,
+            DepndencyInjectionException, IOException {
+        boolean exists = containsBeanInstance(clazz.getName());
+        if(exists) {
+            return getBeanInstance(clazz.getName());
+        }
+
+        return createBeanInstance(clazz);
+    }
+
+    private Object createBeanInstance(Class<?> clazz) throws NoSuchMethodException, DepndencyInjectionException, InvocationTargetException, IllegalAccessException, InvalidBeanException, IOException, InstantiationException {
+        Object instance;
+        if (InjectionUtils.hasInjectableFields(clazz)) {
+                instance = clazz.getDeclaredConstructor().newInstance();
+                addBeanInstance(clazz.getName(), instance);
+                injectRemainingFields(instance);
+        } else  {
+            instance =  ReflectionUtils.newInstance(clazz, null);
+            addBeanInstance(clazz.getName(), instance);
+        }
+        return instance;
+    }
+
+    private void injectRemainingFields(Object instance) throws IOException, InvalidBeanException, DepndencyInjectionException {
+        try {
+            InjectionUtils.injectFields(instance, this);
+        } catch (InvalidFieldExcepton e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Object getBeanInstance(String name) {
+
+        return instantiatedBeans.get(name);
+    }
+
+    public ResolvingBean getResolvingBean(Class<?> clazz) {
+        return resolvingBeans.get(clazz);
+    }
+
+    public void startBeanResolving(Class<?> type, ResolvingBean resolvingBean) {
+        setBeanResolving(type, resolvingBean, true);
+    }
+    public void removeBean(Class<?> clazz) {
+        beans.remove(clazz.getName());
+    }
+
+    public boolean containsBean(Class<?> clazz) {
+        return beans.containsKey(clazz.getName());
     }
 
     public void removeBeanInstance(Object instance) {
@@ -219,106 +284,6 @@ public class BeanCollector {
         beans.clear();
     }
 
-    public void addBean(Class<?> clazz) {
-        beans.put(clazz.getName(), clazz);
-    }
 
-    public void removeBean(Class<?> clazz) {
-        beans.remove(clazz.getName());
-    }
-
-    public boolean containsBean(Class<?> clazz) {
-        return beans.containsKey(clazz.getName());
-    }
-
-    public int size() {
-        return beans.size();
-    }
-
-    public boolean isEmpty() {
-        return beans.isEmpty();
-    }
-
-
-    public Object getOrCreateBeanInstance(Class<?> clazz) throws
-            InvalidBeanException, InvocationTargetException, IllegalAccessException,
-            InstantiationException, NoSuchMethodException, RuntimeException,
-            DepndencyInjectionException, IOException {
-        Object instance = getBeanInstance(clazz.getName());
-        boolean doesNotExist = !containsBeanInstance(clazz.getName());
-        if (doesNotExist && InjectionUtils.hasInjectableFields(clazz)) {
-            try {
-                instance = clazz.getDeclaredConstructor().newInstance();
-                addBeanInstance(clazz.getName(), instance);
-                try {
-                    InjectionUtils.injectFields(instance, this);
-                } catch (InvalidFieldExcepton e) {
-                    throw new RuntimeException(e);
-                }
-            } catch (InstantiationException e) {
-                throw new DepndencyInjectionException(ReflectionUtils.ReflectionDIError.INSTANTIATION_EXCEPTION, e.getMessage());
-            }
-        } else if (doesNotExist) {
-            instance = ReflectionUtils.newInstance(clazz, null);
-            addBeanInstance(clazz.getName(), instance);
-        }
-
-        return instance;
-    }
-
-    public Object getBeanInstance(String name) {
-
-        return instantiatedBeans.get(name);
-    }
-
-    public ResolvingBean getResolvingBean(Class<?> clazz) {
-        return resolvingBeans.get(clazz);
-    }
-
-    private void startBeanResolving(Class<?> type, ResolvingBean resolvingBean) {
-        setBeanResolving(type, resolvingBean, true);
-    }
-
-    @Builder
-    @Data
-    @RequiredArgsConstructor
-    @AllArgsConstructor
-    public static class ResolvingBean {
-        private Class<?> type;
-        private Object resolvingInstance;
-        private Boolean isResolving;
-        private Object[] args;
-        private Constructor<?> constructor;
-        private BeanCollector beanCollector;
-        @Builder.Default
-        private Boolean isPrimitive = false;
-        @Builder.Default
-        private Boolean isResolved = false;
-
-        public void startResolving() {
-            this.isResolving = true;
-            beanCollector.startBeanResolving(type, this);
-        }
-
-        public void stopResolving() {
-            this.isResolving = false;
-            beanCollector.stopBeanResolving(type);
-        }
-
-        public Object invoke() throws InvocationTargetException, InstantiationException
-                , IllegalAccessException, InvalidBeanException {
-            if (isPrimitive) {
-                return resolvingInstance;
-            }
-            return constructor.newInstance(args);
-        }
-
-        public ResolvingBean updateArgsAndGenerateNewResolvingInstance(Object[] args) throws InvalidBeanException,
-                IOException, ClassNotFoundException, InvocationTargetException,
-                NoSuchMethodException, InstantiationException, IllegalAccessException {
-            return beanCollector.updateResolvingBean(this, args);
-        }
-
-    }
 
 }

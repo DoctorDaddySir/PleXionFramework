@@ -157,6 +157,11 @@ public class ReflectionUtils {
         NO_SUCH_METHOD_EXCEPTION;
 
     }
-
+    public static Class<?> updateClassIfAbstractOrInterface(Class<?> clazz) throws IOException, ClassNotFoundException {
+        if (ReflectionUtils.isAbstract(clazz)) {
+            clazz = ReflectionUtils.findInjectableClassforAbstractOrInterfaceClass(clazz);
+        }
+        return clazz;
+    }
 }
 

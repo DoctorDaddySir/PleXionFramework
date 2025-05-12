@@ -7,6 +7,9 @@ import com.doctordaddysir.core.cache.ReflectionCache;
 import com.doctordaddysir.core.exceptions.DepndencyInjectionException;
 import com.doctordaddysir.core.exceptions.InvalidBeanException;
 import com.doctordaddysir.core.exceptions.InvalidFieldExcepton;
+import com.doctordaddysir.core.utils.ExceptionUtils;
+import com.doctordaddysir.core.utils.ExceptionUtils.ReflectionDIError;
+import com.doctordaddysir.core.utils.ExceptionUtils.ReflectionClassError;
 import com.doctordaddysir.core.utils.FieldUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,8 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.doctordaddysir.core.utils.reflection.ReflectionUtils.ReflectionClassError.NO_SUCH_CLASS;
-import static com.doctordaddysir.core.utils.reflection.ReflectionUtils.ReflectionFieldError.NO_SUCH_FIELD;
+import static com.doctordaddysir.core.utils.ExceptionUtils.ReflectionClassError.*;
+import static com.doctordaddysir.core.utils.ExceptionUtils.ReflectionDIError.*;
+import static com.doctordaddysir.core.utils.ExceptionUtils.ReflectionFieldError.NO_SUCH_FIELD;
+import static com.doctordaddysir.core.utils.FieldUtils.findClassForField;
 import static com.doctordaddysir.core.utils.reflection.ReflectionUtils.isAbstract;
 
 @Slf4j
@@ -65,16 +70,16 @@ public class InjectionUtils {
         for (Field field : ReflectionCache.getFields(instance.getClass())) {
             if (field.isAnnotationPresent(Inject.class)) {
                 try {
-                    injectField(instance, field, ReflectionUtils.findClassForField(field),
+                    injectField(instance, field, findClassForField(field),
                             beanCollector);
                 } catch (NoSuchMethodException e) {
                     log.error("Unable to inject field", e);
                 } catch (InvocationTargetException e) {
-                    throw new DepndencyInjectionException(ReflectionUtils.ReflectionDIError.INVOCATION_TARGET_EXCEPTION, e.getMessage());
+                    throw new DepndencyInjectionException(INVOCATION_TARGET_EXCEPTION, e.getMessage());
                 } catch (InstantiationException e) {
-                    throw new DepndencyInjectionException(ReflectionUtils.ReflectionDIError.INSTANTIATION_EXCEPTION, e.getMessage());
+                    throw new DepndencyInjectionException(INSTANTIATION_EXCEPTION, e.getMessage());
                 } catch (IllegalAccessException e) {
-                    throw new DepndencyInjectionException(ReflectionUtils.ReflectionDIError.ILLEGAL_ACCESS_EXCEPTION, e.getMessage());
+                    throw new DepndencyInjectionException(ILLEGAL_ACCESS_EXCEPTION, e.getMessage());
                 } catch (NoSuchFieldException e) {
                     throw new InvalidFieldExcepton(NO_SUCH_FIELD, field);
                 } catch (ClassNotFoundException e) {
@@ -99,10 +104,10 @@ public class InjectionUtils {
 
         List<Constructor<?>> injectableConstructors = getInjectableConstructors(clazz);
         if (injectableConstructors.isEmpty()) {
-            throw new InvalidBeanException(ReflectionUtils.ReflectionClassError.NO_IMPLEMENTATION, "No injectable constructors found for class " + clazz.getCanonicalName() + " with @Injectable annotation");
+            throw new InvalidBeanException(NO_IMPLEMENTATION, "No injectable constructors found for class " + clazz.getCanonicalName() + " with @Injectable annotation");
         }
         if (injectableConstructors.size() > 1) {
-            throw new InvalidBeanException(ReflectionUtils.ReflectionClassError.MULTIPLE_IMPLEMENTATIONS, "Too many constructors annotated with @Injectable");
+            throw new InvalidBeanException(MULTIPLE_IMPLEMENTATIONS, "Too many constructors annotated with @Injectable");
         }
 
 

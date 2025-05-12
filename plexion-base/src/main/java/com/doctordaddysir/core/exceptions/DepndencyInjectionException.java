@@ -1,6 +1,7 @@
 package com.doctordaddysir.core.exceptions;
 
-import com.doctordaddysir.core.utils.reflection.ReflectionUtils.ReflectionDIError;
+
+import com.doctordaddysir.core.utils.ExceptionUtils.ReflectionDIError;
 import lombok.Getter;
 
 @Getter

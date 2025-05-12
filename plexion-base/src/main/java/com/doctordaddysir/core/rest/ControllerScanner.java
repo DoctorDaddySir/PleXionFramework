@@ -1,31 +1,27 @@
 package com.doctordaddysir.core.rest;
 
 import com.doctordaddysir.core.SystemInfo;
-import com.doctordaddysir.core.reflection.annotations.Bean;
 import com.doctordaddysir.core.exceptions.RouteRegistryException;
+import com.doctordaddysir.core.reflection.annotations.Bean;
 import com.doctordaddysir.core.utils.reflection.AnnotationScanner;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Bean
 @Slf4j
 @Getter
-public class RouteRegistry {
-    private final   Map<Class<? extends Annotation> /*verb*/, Map<Class<?>/* controller
-    */, Method>> registry = new ConcurrentHashMap<>();
+public class ControllerScanner {
+    private static final Map<String, RouteDefinition[]> registry = new HashMap<>();
 
-    public  void init() {
-        collectControllersAndRoutes();
-    }
-
-    private  void collectControllersAndRoutes() {
+    public static  Map<String, RouteDefinition> collectControllersAndRoutes() {
+        Map<String, RouteDefinition> routes = new HashMap<>();
         try {
             Set<Class<?>> controllers = CollectControllers();
             controllers.forEach(controller -> {
@@ -36,10 +32,15 @@ public class RouteRegistry {
                                         AnnotationScanner.findMethodsWithAnnotation(annotation, controller);
                                 if (!methods.isEmpty()) {
                                     if (methods.size() > 1) throw new RouteRegistryException();
-                                    Map<Class<?>, Method> routeMap = getRouteMap(controller, methods.stream().findFirst().get());
-                                    addRouteToRegistry(annotation, routeMap);
+                                    Method method = methods.stream().findFirst().get();
+                                    RouteDefinition route = new RouteDefinition(controller.getDeclaredConstructor().newInstance(), method);
+                                    String path = method.getAnnotation(annotation).annotationType().getMethod("value").invoke(method.getAnnotation(annotation)).toString();
+                                    String key = String.format("%s:%s",annotation.getSimpleName().toUpperCase(), path);
+                                    routes.put(key, route);
                                 }
-                            } catch (RouteRegistryException e) {
+                            } catch (RouteRegistryException | NoSuchMethodException |
+                                     InstantiationException | IllegalAccessException |
+                                     InvocationTargetException e) {
                                 throw new RuntimeException(e);
                             }
 
@@ -51,28 +52,12 @@ public class RouteRegistry {
         } catch (ClassNotFoundException e) {
             log.error("Class not found", e);
         }
+        return routes;
     }
-
-    private  void addRouteToRegistry(Class<? extends Annotation> annotation, Map<Class<?>, Method> routeMap) {
-        log.debug("Adding route: {} - {} {}",
-                annotation.getSimpleName().toUpperCase(),
-                routeMap.entrySet().stream().findFirst().get().getKey().getSimpleName(),
-                routeMap.entrySet().stream().findFirst().get().getValue().getName());
-        registry.put(annotation, routeMap);
-    }
-
-    private  Set<Class<?>> CollectControllers() throws IOException,
+    private static Set<Class<?>> CollectControllers() throws IOException,
             ClassNotFoundException {
         return AnnotationScanner.findClassesWithAnnotationFromCollection(SystemInfo.CONTROLLER_ANNOTATIONS,
                 SystemInfo.BASE_PACKAGE);
-    }
-
-
-    private  Map<Class<?>,Method> getRouteMap(Class<?> controller, Method method) {
-        return Map.of(controller, method);
-
-
-
     }
 
 }

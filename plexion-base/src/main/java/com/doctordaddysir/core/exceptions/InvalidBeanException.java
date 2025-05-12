@@ -1,7 +1,8 @@
 package com.doctordaddysir.core.exceptions;
 
 
-import com.doctordaddysir.core.utils.reflection.ReflectionUtils.ReflectionClassError;
+import com.doctordaddysir.core.utils.ExceptionUtils;
+import com.doctordaddysir.core.utils.ExceptionUtils.ReflectionClassError;
 
 public class InvalidBeanException extends Exception {
     private ReflectionClassError reflectionClassError;

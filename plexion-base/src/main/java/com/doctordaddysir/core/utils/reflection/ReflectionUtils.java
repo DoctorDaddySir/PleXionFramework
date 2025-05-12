@@ -21,16 +21,6 @@ public class ReflectionUtils {
         return Class.forName(className);
     }
 
-    public static Object newInstance(Constructor<?> constructor, Object[] args) throws IllegalAccessException, InstantiationException, InvocationTargetException {
-        if (constructor == null) {
-            return null;
-        }
-        if (args == null) {
-            args = new Object[0];
-        }
-        return constructor.newInstance(args);
-    }
-
     public static Object newInstance(Class<?> clazz, Object[] args) throws IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
         if (clazz == null) {
             return null;
@@ -100,16 +90,7 @@ public class ReflectionUtils {
         return Modifier.isAbstract(clazz.getModifiers());
     }
 
-    public static Class<?> findClassForField(Field field) throws IOException,
-            ClassNotFoundException {
-        Class<?> clazz = field.getType();
-        if (clazz.isPrimitive()) {
-            return clazz;
-        }
-        return findConcreteClassForInjection(field);
-    }
-
-    private static Class<?> findConcreteClassForInjection(Field field) throws IOException, ClassNotFoundException {
+    public static Class<?> findConcreteClassForInjection(Field field) throws IOException, ClassNotFoundException {
         return findInjectableClassforAbstractOrInterfaceClass(field.getType());
 
     }
@@ -133,28 +114,7 @@ public class ReflectionUtils {
         return clazz;
     }
 
-    public enum ReflectionFieldError {
-        NO_SUCH_FIELD,
-        INACCESSIBLE_FIELD,
-        INACCESSIBLE_CLASS,
-        WRONG_TYPE;
 
-    }
-
-    public enum ReflectionClassError {
-        NO_SUCH_CLASS,
-        WRONG_TYPE,
-        MULTIPLE_IMPLEMENTATIONS,
-        NO_IMPLEMENTATION;
-    }
-
-    public enum ReflectionDIError {
-        INSTANTIATION_EXCEPTION,
-        ILLEGAL_ACCESS_EXCEPTION,
-        INVOCATION_TARGET_EXCEPTION,
-        NO_SUCH_METHOD_EXCEPTION;
-
-    }
     public static Class<?> updateClassIfAbstractOrInterface(Class<?> clazz) throws IOException, ClassNotFoundException {
         if (ReflectionUtils.isAbstract(clazz)) {
             clazz = ReflectionUtils.findInjectableClassforAbstractOrInterfaceClass(clazz);

@@ -8,24 +8,27 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RequiredArgsConstructor
 @Slf4j
 @Bean
-@NoArgsConstructor(force = true)
 public class PLexionRestServer {
     private final int port = 8080;
-    @Inject
-    private final RouteRegistry routeRegistry;
+    private Map<String, RouteDefinition> routes = new HashMap<>();
 
     public void start() {
-        routeRegistry.init();
-        log.debug("Route registry initialized.");
+        routes = ControllerScanner.collectControllersAndRoutes();
         Undertow server = Undertow
                 .builder()
                 .addHttpListener(port, "localhost")
                 .setHandler(exchange -> {
-                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                    exchange.getResponseSender().send("PLeXion REST Server");
+                    if (exchange.isInIoThread()) {
+                        ControllerDispatcher dispatcher = new ControllerDispatcher(routes);
+                        exchange.dispatch(() -> dispatcher.handleRequest(exchange));
+                        return;
+                    }
                 })
                 .build();
         server.start();

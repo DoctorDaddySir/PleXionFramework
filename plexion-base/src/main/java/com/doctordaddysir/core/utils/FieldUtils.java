@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import static com.doctordaddysir.core.utils.reflection.ReflectionUtils.findConcreteClassForInjection;
 import static java.util.Objects.nonNull;
 
 public class FieldUtils {
@@ -21,7 +22,7 @@ public class FieldUtils {
                 value = Objects.requireNonNull(ReflectionUtils.findImplementation(value.getClass())).getDeclaredConstructor().newInstance();
             }
             if (ReflectionUtils.isAbstract(value.getClass())) {
-                value = ReflectionUtils.findClassForField(field);
+                value = findClassForField(field);
             }
         }
         field.set(target, value);
@@ -33,7 +34,14 @@ public class FieldUtils {
         Field field = target.getClass().getDeclaredField(fieldName);
         return field.get(target);
     }
-
+    public static Class<?> findClassForField(Field field) throws IOException,
+            ClassNotFoundException {
+        Class<?> clazz = field.getType();
+        if (clazz.isPrimitive()) {
+            return clazz;
+        }
+        return findConcreteClassForInjection(field);
+    }
 
     public static Field getFieldRecursive(Class<?> clazz, String name) {
         while (clazz != null) {

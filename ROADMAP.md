@@ -1,77 +1,114 @@
 
-# 🛣️ PleXion Framework Roadmap
+# 🛣️ PleXion Framework Roadmap (Expanded)
 
-The PleXion Framework is a lightweight, annotation-driven Java framework evolving toward full-stack modularity. This roadmap outlines the major development phases from RESTful foundations to server-side React rendering.
+PleXion is a modular, annotation-driven Java framework evolving into a full-stack, Spring-alternative platform. This roadmap outlines development phases with integrated architectural goals and emerging features.
 
 ---
 
 ## ✅ Phase 1: REST Server + Initial Open Source Release
 
 ### 🎯 Goals
-- Complete REST routing, request handling, and JSON support.
-- Publish the framework with clean documentation and examples.
+- Full REST controller and plugin support
+- First open-source release
 
 ### 📌 Features
-- `@RestController`, `@Get`, `@Post`, etc.
-- `@RequestBody` and `@PathVariable` parsing
-- `ResponseEntity` and status code abstraction
-- JSON serialization/deserialization via Gson
-- Basic CLI UI (deprecated after REST integration)
-- Plugin lifecycle hooks exposed via REST
-
-### 📦 Deliverables
-- Public GitHub repo with `v0.1.0` release
-- Developer docs and examples
-- Minimal unit test suite
-- MIT or Apache-2.0 license
+- `@RestController`, `@Get`, `@Post`, `@PathVariable`, `@RequestBody`
+- JSON serialization via Gson
+- `ResponseEntity` abstraction with status codes
+- Centralized error handling
+- Pre/post request filter system (middleware hooks)
+- Lifecycle tracing logs
+- Basic plugin management API
+- Begin config file support (properties/yaml)
 
 ---
 
 ## ⚙️ Phase 2: MVC + Database Integration
 
 ### 🎯 Goals
-- Add server-side rendering (SSR) via Pebble template engine.
-- Introduce Hibernate-powered persistence layer.
+- Add view rendering and database layer
+- Begin layered injection and lifecycle system
 
 ### 📌 Features
-- `@Controller` + Pebble view rendering
-- `ModelAndView` support
+- Pebble-based SSR via `@Controller` and `ModelAndView`
 - Static asset routing
-- `@Entity`, `@Repository`, `@Service` tiered injection
-- In-memory DB (H2) for dev
-- Config file support (YAML/properties)
+- Hibernate ORM support with `@Entity`, `@Repository`
+- In-memory DB (H2) support
+- `@Config` annotation for property injection
+- Bean scopes + lifecycle (`@PostConstruct`, `@PreDestroy`)
+- Annotation-based validation (`@NotNull`, `@Min`, etc.)
+- Dev console (`/__plexion`) for live route/bean/plugin inspection
 
 ---
 
 ## ⚛️ Phase 3: Reactive Core + Documentation Generator
 
 ### 🎯 Goals
-- Shift to a Netty-based non-blocking reactive server.
-- Auto-generate documentation using annotation metadata.
+- Enable high-throughput Netty support
+- Introduce live documentation generator
 
 ### 📌 Features
-- Non-blocking Netty server with backpressure support
-- Reactive-style controller return types
-- Dual-mode (blocking/reactive) runtime toggle
+- Toggleable Undertow/Netty support
+- Reactive-style method return compatibility
+- Lifecycle hook compatibility with reactive flow
 - `@Doc` annotation for classes, fields, and methods
-- Route docs in Markdown/JSON
-- Optional Pebble-rendered HTML docs
+- Generate Markdown/JSON route and bean documentation
+- Optional Pebble-rendered HTML doc UI
+- Foundation for modular startup (`@EnableX` annotations)
 
 ---
 
 ## ⚛️🎨 Phase 4: Server-Side React Rendering
 
 ### 🎯 Goals
-- Support server-side React via a pluggable rendering interface.
+- Flexible JSX rendering via GraalVM/Node.js
 
 ### 📌 Features
-- `ReactRenderer` abstraction
-- Support for GraalVM polyglot, Node bridge, or embedded JS engine
-- `.jsx` or precompiled view execution
-- Pebble/React rendering coexistence
-- HTML hydration output support
+- `ReactRenderer` interface with polyglot or Node bridge
+- Precompiled `.jsx` rendering or on-the-fly
+- Output hydration-compatible HTML
+- Coexistence with Pebble-based rendering
 
 ---
 
-**Roadmap Status:** Actively evolving. For feature requests or contributions, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+## 🔐 Phase 5: Security and Scheduling
 
+### 🎯 Goals
+- Add route-level auth and job scheduler
+
+### 📌 Features
+- `@Secured("ROLE")` annotations
+- JWT support and auth integration
+- Custom pluggable auth providers
+- `@Scheduled` support with time-based triggers
+- Configurable task thread pool
+
+---
+
+## 🧰 Phase 6: Auto-Configuration & Developer Tools
+
+### 🎯 Goals
+- Improve DX and default behaviors
+
+### 📌 Features
+- `@EnableX` annotations to activate modules
+- Optional classpath-based auto-configuration
+- `PlexionHttpClient` for REST calls
+- CLI tool (`plex`) to inspect plugins/config/routes
+- Runtime dashboard UI (`Plexion Studio`)
+
+---
+
+## 🧩 Phase 7: Plugin Marketplace and Ecosystem
+
+### 🎯 Goals
+- Enable external plugin discovery, installation, and versioning
+
+### 📌 Features
+- Secure plugin registry and manifest format
+- Plugin versioning and dependency resolver
+- GUI interface for managing community plugin ecosystem
+
+---
+
+**Status:** Actively evolving — see [CONTRIBUTING.md](./CONTRIBUTING.md) for how to get involved!

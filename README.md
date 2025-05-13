@@ -3,7 +3,7 @@
 
 PleXion is a lightweight, annotation-driven Java framework built to rival Spring — starting with RESTful microservice foundations and evolving into a full-stack powerhouse with MVC, reactive support, and server-side React rendering.
 
-![PleXion Logo](assets/branding/plexion-logo.png)
+![PleXion Logo](assets/logo.png)
 
 ---
 
